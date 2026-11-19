@@ -93,9 +93,17 @@ async function apiFetch(path, options = {}) {
     return { ok: true, data: data || [], status: 200 };
   }
 
-  // /api/blog — no blog table yet, return empty gracefully
+  // /api/blog
   if (path.startsWith('/api/blog')) {
-    return { ok: true, data: [], status: 200 };
+    const slugMatch = path.match(/\/api\/blog\/([^?]+)/);
+    if (slugMatch) {
+      const { data, error } = await db.from('nst_blog_posts').select('*').eq('slug', slugMatch[1]).single();
+      if (error) return { ok: false, data: {}, status: 404 };
+      return { ok: true, data, status: 200 };
+    }
+    const { data, error } = await db.from('nst_blog_posts').select('*').eq('published', true).order('created_at', { ascending: false });
+    if (error) return { ok: false, data: [], status: 500 };
+    return { ok: true, data: data || [], status: 200 };
   }
 
   // Unknown GET

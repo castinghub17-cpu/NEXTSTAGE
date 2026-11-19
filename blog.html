@@ -236,8 +236,8 @@
 
   async function loadPosts() {
     try {
-      const res = await fetch('/api/blog');
-      allPosts = await res.json();
+      const res = await apiFetch('/api/blog');
+      allPosts = res.data || [];
       document.getElementById('blog-loading').style.display = 'none';
       renderPosts();
     } catch(e) {
