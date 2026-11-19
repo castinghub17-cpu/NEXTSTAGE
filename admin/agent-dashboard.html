@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" type="image/png" href="https://www.nextstagetalent.co.uk/favicon.png" sizes="64x64">
+  <link rel="icon" href="https://www.nextstagetalent.co.uk/favicon.svg" type="image/svg+xml">
+  <title>Agent Dashboard — Next Stage Talent</title>
+  <link rel="stylesheet" href="../css/style.css" />
+  <style>
+    body { background: #f7f8fa; font-family: 'Inter', sans-serif; }
+
+    /* Layout */
+    .agent-layout { display: flex; min-height: 100vh; }
+    .sidebar {
+      width: 220px; flex-shrink: 0;
+      background: #0d1b2a; color: #fff;
+      display: flex; flex-direction: column;
+      position: fixed; top: 0; bottom: 0; left: 0; z-index: 100;
+    }
+    .sidebar-logo { padding: 28px 24px 20px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+    .sidebar-logo-text { font-family: 'Playfair Display', serif; font-size: 1.15rem; font-weight: 700; }
+    .sidebar-logo-text span { color: #c9a96e; }
+    .sidebar-badge {
+      display: inline-block; margin-top: 6px;
+      background: rgba(74,130,166,0.25); color: #7aaec8;
+      font-size: 10px; font-weight: 600; letter-spacing: 0.1em;
+      text-transform: uppercase; padding: 3px 10px; border-radius: 100px;
+    }
+    .sidebar-nav { padding: 16px 0; flex: 1; }
+    .nav-item {
+      display: flex; align-items: center; gap: 11px;
+      padding: 11px 20px; font-size: 13px; color: rgba(255,255,255,0.6);
+      cursor: pointer; border: none; background: none; width: 100%;
+      text-align: left; font-family: inherit; transition: all 0.15s; border-radius: 0;
+    }
+    .nav-item:hover { background: rgba(255,255,255,0.07); color: #fff; }
+    .nav-item.active { background: rgba(201,169,110,0.15); color: #c9a96e; }
+    .nav-item .icon { font-size: 16px; width: 20px; text-align: center; }
+    .sidebar-footer { padding: 18px 24px; border-top: 1px solid rgba(255,255,255,0.08); }
+    .logout-btn {
+      display: flex; align-items: center; gap: 9px; font-size: 13px;
+      color: rgba(255,255,255,0.45); cursor: pointer; border: none;
+      background: none; font-family: inherit; transition: color 0.2s;
+    }
+    .logout-btn:hover { color: #ff6b6b; }
+
+    /* Main */
+    .main { margin-left: 220px; flex: 1; }
+    .top-bar {
+      background: #fff; border-bottom: 1px solid #e8edf2;
+      padding: 18px 36px; display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 50;
+    }
+    .top-bar h1 { font-family: 'Playfair Display', serif; font-size: 1.2rem; color: #0d1b2a; }
+    .top-bar-sub { font-size: 12px; color: #8a99a8; margin-top: 2px; }
+    .content { padding: 32px 36px; }
+
+    /* Panel */
+    .panel { display: none; }
+    .panel.active { display: block; }
+
+    /* Stats */
+    .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 28px; }
+    .stat-card { background: #fff; border: 1px solid #e8edf2; border-radius: 10px; padding: 20px 22px; }
+    .stat-card .num { font-family: 'Playfair Display', serif; font-size: 2rem; font-weight: 700; color: #0d1b2a; }
+    .stat-card .lbl { font-size: 11px; color: #8a99a8; text-transform: uppercase; letter-spacing: 0.08em; margin-top: 4px; }
+
+    /* Table card */
+    .table-card { background: #fff; border: 1px solid #e8edf2; border-radius: 10px; overflow: hidden; }
+    .table-card-header { padding: 18px 22px 16px; border-bottom: 1px solid #e8edf2; display: flex; align-items: center; justify-content: space-between; }
+    .table-card-header h2 { font-family: 'Playfair Display', serif; font-size: 1rem; color: #0d1b2a; }
+    .search-box {
+      padding: 8px 14px; border: 1.5px solid #e2e8f0; border-radius: 7px;
+      font-size: 13px; font-family: inherit; outline: none; width: 220px;
+    }
+    .search-box:focus { border-color: #4a82a6; }
+    .data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .data-table th { text-align: left; padding: 11px 16px; font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #8a99a8; border-bottom: 2px solid #e8edf2; background: #fafbfc; }
+    .data-table td { padding: 13px 16px; border-bottom: 1px solid #f0f4f8; vertical-align: middle; }
+    .data-table tr:last-child td { border-bottom: none; }
+    .data-table tr:hover td { background: #f7f9fc; }
+    .empty-row td { text-align: center; padding: 48px; color: #a0aec0; }
+
+    /* Status badge */
+    .status-badge {
+      display: inline-block; padding: 3px 10px; border-radius: 100px;
+      font-size: 11px; font-weight: 600; letter-spacing: 0.03em;
+    }
+    .status-New { background: #e8f4fd; color: #2b6cb0; }
+    .status-Called { background: #f0fff4; color: #276749; }
+    .status-Booked { background: #e9d8fd; color: #6b46c1; }
+    .status-No-Answer { background: #fffbeb; color: #975a16; }
+    .status-Not-Interested { background: #fff5f5; color: #c53030; }
+    .status-Follow-Up { background: #fef3c7; color: #92400e; }
+    .status-Invited-to-Interview { background: #d1fae5; color: #065f46; }
+    .status-Callback { background: #e0f2fe; color: #0369a1; }
+
+    /* Status select */
+    .status-select {
+      border: 1.5px solid #e2e8f0; border-radius: 6px; padding: 5px 8px;
+      font-size: 12px; font-family: inherit; background: #fff; cursor: pointer;
+      outline: none; transition: border-color 0.15s;
+    }
+    .status-select:focus { border-color: #4a82a6; }
+
+    /* Buttons */
+    .btn-invite {
+      background: #065f46; color: #fff; border: none; border-radius: 6px;
+      padding: 6px 13px; font-size: 12px; font-weight: 600; cursor: pointer;
+      font-family: inherit; transition: background 0.15s; white-space: nowrap;
+    }
+    .btn-invite:hover { background: #047857; }
+    .btn-invite:disabled { background: #a7c5bb; cursor: default; }
+    .btn-detail {
+      background: none; border: 1.5px solid #e2e8f0; border-radius: 6px;
+      padding: 5px 11px; font-size: 12px; color: #4a5568; cursor: pointer;
+      font-family: inherit; transition: all 0.15s;
+    }
+    .btn-detail:hover { background: #f0f4f8; border-color: #c3cfd8; }
+
+    /* Detail modal */
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 999; align-items: center; justify-content: center; }
+    .modal-overlay.active { display: flex; }
+    .modal { background: #fff; border-radius: 12px; padding: 36px; width: 90%; max-width: 660px; max-height: 88vh; overflow-y: auto; position: relative; }
+    .modal h2 { font-family: 'Playfair Display', serif; font-size: 1.2rem; margin-bottom: 4px; color: #0d1b2a; }
+    .modal-sub { font-size: 12px; color: #8a99a8; margin-bottom: 24px; }
+    .modal-close { position: absolute; top: 16px; right: 20px; background: none; border: none; font-size: 20px; cursor: pointer; color: #8a99a8; }
+    .modal-close:hover { color: #0d1b2a; }
+    .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 24px; }
+    .detail-item label { font-size: 11px; font-weight: 600; color: #8a99a8; text-transform: uppercase; letter-spacing: 0.07em; display: block; margin-bottom: 3px; }
+    .detail-item p { font-size: 13px; color: #1e2d3d; margin: 0; }
+    .detail-divider { grid-column: 1 / -1; border: none; border-top: 1px solid #e8edf2; margin: 4px 0; }
+    .detail-section { grid-column: 1 / -1; font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #4a82a6; margin-top: 4px; }
+
+    /* Status update inside modal */
+    .status-update-box { grid-column: 1 / -1; background: #f7f8fa; border: 1px solid #e8edf2; border-radius: 8px; padding: 16px 18px; margin-top: 8px; }
+    .status-update-box label { font-size: 11px; font-weight: 700; color: #4a82a6; text-transform: uppercase; letter-spacing: 0.08em; display: block; margin-bottom: 10px; }
+    .status-row { display: flex; gap: 10px; align-items: flex-start; }
+    .status-row select { flex: 1; padding: 9px 12px; border: 1.5px solid #e2e8f0; border-radius: 7px; font-size: 13px; font-family: inherit; background: #fff; }
+    .status-row textarea { flex: 2; padding: 9px 12px; border: 1.5px solid #e2e8f0; border-radius: 7px; font-size: 13px; font-family: inherit; resize: vertical; min-height: 42px; }
+    .status-row button { padding: 9px 18px; background: #0d1b2a; color: #fff; border: none; border-radius: 7px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; white-space: nowrap; }
+    .status-row button:hover { background: #1e2d3d; }
+    .toast { position: fixed; bottom: 28px; right: 28px; background: #0d1b2a; color: #fff; padding: 12px 22px; border-radius: 8px; font-size: 13px; z-index: 9999; opacity: 0; transition: opacity 0.3s; pointer-events: none; }
+    .toast.show { opacity: 1; }
+  </style>
+</head>
+<body>
+<div class="agent-layout">
+
+  <!-- Sidebar -->
+  <nav class="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-text">Next Stage<span>.</span></div>
+      <span class="sidebar-badge">Agent Portal</span>
+    </div>
+    <div class="sidebar-nav">
+      <button class="nav-item active" onclick="showPanel('leads')" id="nav-leads">
+        <span class="icon">📋</span> Master Database
+      </button>
+      <button class="nav-item" onclick="showPanel('applications')" id="nav-applications">
+        <span class="icon">📝</span> Applications
+      </button>
+    </div>
+    <div class="sidebar-footer">
+      <button class="logout-btn" onclick="logout()">
+        <span>⎋</span> Sign Out
+      </button>
+    </div>
+  </nav>
+
+  <!-- Main -->
+  <div class="main">
+    <div class="top-bar">
+      <div>
+        <h1 id="page-title">Master Database</h1>
+        <div class="top-bar-sub" id="page-sub">All contacts & leads</div>
+      </div>
+    </div>
+    <div class="content">
+
+      <!-- MASTER DATABASE PANEL -->
+      <div class="panel active" id="panel-leads">
+        <div class="stats-row" id="leads-stats"></div>
+        <div class="table-card">
+          <div class="table-card-header" style="flex-wrap:wrap;gap:12px;">
+            <h2>Contacts & Leads</h2>
+            <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+              <input class="search-box" type="text" id="search-box" placeholder="🔍 Search name, email or phone…" oninput="applySearch()" style="width:260px;"/>
+              <select id="status-filter" onchange="applySearch()" style="height:38px;border:1.5px solid #e2e8f0;border-radius:8px;padding:0 10px;font-size:12px;font-family:inherit;color:#2d3748;background:#fff;cursor:pointer;">
+                <option value="">All Statuses</option>
+                <option>New</option>
+                <option>Called - LM - Invitation Sent</option>
+                <option>No Answer - Invitation Sent</option>
+                <option>Interview Scheduled</option>
+                <option>Interview Confirm</option>
+                <option>Confirm</option>
+                <option>2nd Interview</option>
+                <option>Final Interview</option>
+                <option>Interview Done</option>
+                <option>Shoot Booked</option>
+                <option>No Show</option>
+                <option>Declined</option>
+              </select>
+            </div>
+          </div>
+          <div style="overflow-x:auto">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Full Name</th>
+                  <th>Email</th>
+                  <th>Phone</th>
+                  <th>Source</th>
+                  <th>Status</th>
+                  <th>Invite</th>
+                  <th>Added</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="leads-tbody">
+                <tr class="empty-row"><td colspan="9">Loading…</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- APPLICATIONS PANEL -->
+      <div class="panel" id="panel-applications">
+        <div class="stats-row" id="apps-stats"></div>
+        <div class="table-card">
+          <div class="table-card-header">
+            <h2>Pre-Screening Applications</h2>
+          </div>
+          <div style="overflow-x:auto">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Mobile</th>
+                  <th>Availability</th>
+                  <th>Date Applied</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="apps-tbody">
+                <tr class="empty-row"><td colspan="7">Loading…</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Detail Modal -->
+<div class="modal-overlay" id="modal-overlay" onclick="closeModal(event)">
+  <div class="modal" id="modal-box">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div id="modal-content"></div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+  // ── Auth check ──────────────────────────────────────────────────────────────
+  fetch('/api/agent/check').then(r => r.json()).then(d => {
+    if (!d.authenticated) window.location = '/admin/agent-login.html';
+  });
+
+  // ── State ───────────────────────────────────────────────────────────────────
+  let leadsData = [];
+  let appsData  = [];
+  let currentPanel = 'leads';
+  let leadsPage = 1;
+  let leadsTotalPages = 1;
+  let leadsTotal = 0;
+  let leadsSearch = '';
+
+  const STATUSES = ['New', 'Called - LM - Invitation Sent', 'No Answer - Invitation Sent', 'Interview Scheduled', 'Interview Confirm', 'Confirm', '2nd Interview', 'Final Interview', 'Interview Done', 'Shoot Booked', 'No Show', 'Declined'];
+  const APP_STATUSES = ['New', 'Called - LM - Invitation Sent', 'No Answer - Invitation Sent', 'Interview Scheduled', 'Interview Confirm', 'Confirm', '2nd Interview', 'Final Interview', 'Interview Done', 'Shoot Booked', 'No Show', 'Declined'];
+
+  // ── Load data ───────────────────────────────────────────────────────────────
+  let leadsStatusFilter = '';
+
+  async function loadLeads(page = 1, q = '', status = leadsStatusFilter) {
+    leadsPage = page;
+    leadsSearch = q;
+    leadsStatusFilter = status;
+    const tbody = document.getElementById('leads-tbody');
+    tbody.innerHTML = '<tr class="empty-row"><td colspan="9">Loading…</td></tr>';
+    const res = await fetch(`/api/agent/leads?page=${page}&q=${encodeURIComponent(q)}&status=${encodeURIComponent(status)}`);
+    const data = await res.json();
+    leadsData = data.records || [];
+    leadsTotal = data.total || 0;
+    leadsTotalPages = Math.ceil(leadsTotal / (data.per_page || 100));
+    renderLeads();
+  }
+
+  async function loadApps() {
+    const res = await fetch('/api/agent/applications');
+    appsData = await res.json();
+    renderApps();
+  }
+
+  // ── Render leads ─────────────────────────────────────────────────────────────
+  function renderLeads() {
+    const tbody = document.getElementById('leads-tbody');
+    const rows = leadsData;
+
+    // Stats
+    const invited = leadsData.filter(r => r.invited || r.invite_status === 'Invited').length;
+    const newCount = leadsData.filter(r => !r.status || r.status === 'New').length;
+    document.getElementById('leads-stats').innerHTML = `
+      <div class="stat-card"><div class="num">${leadsTotal}</div><div class="lbl">Total Leads</div></div>
+      <div class="stat-card"><div class="num">${newCount}</div><div class="lbl">New (this page)</div></div>
+      <div class="stat-card"><div class="num">${invited}</div><div class="lbl">Invited (this page)</div></div>
+    `;
+
+    if (!rows.length) {
+      tbody.innerHTML = '<tr class="empty-row"><td colspan="9">No leads found</td></tr>';
+      renderLeadsPagination();
+      return;
+    }
+    tbody.innerHTML = rows.map(r => {
+      const alreadyInvited = !!r.invited || r.invite_status === 'Invited';
+      return `
+      <tr>
+        <td style="color:#a0aec0">${r.id}</td>
+        <td style="font-weight:600;color:#1e2d3d">${esc(r.full_name || r.name)}</td>
+        <td><a href="mailto:${esc(r.email)}" style="color:#4a82a6">${esc(r.email)}</a></td>
+        <td>${esc(r.phone || '—')}</td>
+        <td style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(r.source || '—')}</td>
+        <td>
+          <select class="status-select" onchange="quickStatus('leads', ${r.id}, this.value)">
+            ${STATUSES.map(s => `<option value="${s}" ${(r.status||'New')===s?'selected':''}>${s}</option>`).join('')}
+          </select>
+        </td>
+        <td>
+          <button class="btn-invite" style="font-size:11px;padding:5px 10px" ${alreadyInvited?'disabled':''} onclick="inviteLead(${r.id}, this)">
+            ${alreadyInvited ? '✓ Invited' : '📩 Invite'}
+          </button>
+        </td>
+        <td style="color:#8a99a8;white-space:nowrap">${fmtDate(r.created_at)}</td>
+        <td><button class="btn-detail" onclick="openLeadEdit(${r.id})">✏️ Edit</button></td>
+      </tr>`;
+    }).join('');
+    renderLeadsPagination();
+  }
+
+  // ── Render applications ──────────────────────────────────────────────────────
+  function renderApps(filter = '') {
+    const tbody = document.getElementById('apps-tbody');
+    const q = filter.toLowerCase();
+    const rows = appsData.filter(r => {
+      const name = `${r.first_name || ''} ${r.last_name || ''}`;
+      return !q || [name, r.email, r.mobile, r.status, r.availability].some(v => v && v.toLowerCase().includes(q));
+    });
+
+    // Stats
+    const invited = appsData.filter(r => r.status === 'Invited to Interview').length;
+    const newCount = appsData.filter(r => !r.status || r.status === 'New').length;
+    document.getElementById('apps-stats').innerHTML = `
+      <div class="stat-card"><div class="num">${appsData.length}</div><div class="lbl">Total Applications</div></div>
+      <div class="stat-card"><div class="num">${newCount}</div><div class="lbl">New</div></div>
+      <div class="stat-card"><div class="num">${invited}</div><div class="lbl">Invited to Interview</div></div>
+    `;
+
+    if (!rows.length) {
+      tbody.innerHTML = '<tr class="empty-row"><td colspan="8">No applications found</td></tr>';
+      return;
+    }
+    tbody.innerHTML = rows.map(r => {
+      const name = `${r.first_name || ''} ${r.last_name || ''}`.trim();
+      return `
+      <tr>
+        <td style="color:#a0aec0">${r.id}</td>
+        <td style="font-weight:600;color:#1e2d3d">${esc(name)}</td>
+        <td><a href="mailto:${esc(r.email)}" style="color:#4a82a6">${esc(r.email || '—')}</a></td>
+        <td>${esc(r.mobile || '—')}</td>
+        <td>${esc(r.availability || '—')}</td>
+        <td style="color:#8a99a8;white-space:nowrap">${fmtDate(r.created_at)}</td>
+        <td style="display:flex;gap:6px">
+          <button class="btn-detail" onclick="openAppView(${r.id})">👁 View</button>
+          <button class="btn-detail" onclick="openAppEdit(${r.id})">✏️ Edit</button>
+        </td>
+      </tr>`;
+    }).join('');
+  }
+
+  // ── Quick status update (dropdown in table row) ──────────────────────────────
+  async function quickStatus(type, id, status) {
+    const url = type === 'leads'
+      ? `/api/agent/leads/${id}/status`
+      : `/api/agent/applications/${id}/status`;
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status, note: '' })
+    });
+    if (res.ok) {
+      if (type === 'leads') {
+        const r = leadsData.find(x => x.id === id);
+        if (r) r.status = status;
+      } else {
+        const r = appsData.find(x => x.id === id);
+        if (r) r.status = status;
+      }
+      showToast('Status updated');
+    }
+  }
+
+  // ── Invite lead (Master Database) ────────────────────────────────────────────
+  async function inviteLead(id, btn) {
+    const note = prompt('Optional note for the invitation email (leave blank for none):') ?? '';
+    btn.disabled = true;
+    btn.textContent = 'Sending…';
+    const res = await fetch(`/api/agent/leads/${id}/invite`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ note })
+    });
+    if (res.ok) {
+      const r = leadsData.find(x => x.id === id);
+      if (r) { r.invited = 1; r.status = 'Called - LM - Invitation Sent'; }
+      btn.textContent = '✓ Invited';
+      showToast('Invitation sent!');
+      renderLeads(document.getElementById('search-box').value);
+    } else {
+      btn.disabled = false;
+      btn.textContent = '📩 Invite';
+      showToast('Failed to send invite');
+    }
+  }
+
+  // ── Invite to interview ──────────────────────────────────────────────────────
+  async function inviteToInterview(id, btn) {
+    const note = prompt('Optional note for the invitation email (leave blank for none):') ?? '';
+    btn.disabled = true;
+    btn.textContent = 'Sending…';
+    const res = await fetch(`/api/agent/applications/${id}/invite`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ note })
+    });
+    if (res.ok) {
+      const r = appsData.find(x => x.id === id);
+      if (r) r.status = 'Invited to Interview';
+      btn.textContent = '✓ Invited';
+      showToast('Interview invitation sent!');
+    } else {
+      btn.disabled = false;
+      btn.textContent = '📩 Invite';
+      showToast('Failed to send invite');
+    }
+  }
+
+  // ── Detail modals ────────────────────────────────────────────────────────────
+  function openLeadEdit(id) {
+    const r = leadsData.find(x => x.id === id);
+    if (!r) return;
+    const alreadyInvited = !!r.invited || r.invite_status === 'Invited';
+    document.getElementById('modal-content').innerHTML = `
+      <h2>${esc(r.full_name || r.name)}</h2>
+      <div class="modal-sub">${esc(r.email || '—')} · ${esc(r.phone || '—')}</div>
+      <div class="detail-grid">
+
+        <div class="detail-item">
+          <label>Email Address</label>
+          <input type="email" id="edit-email" value="${esc(r.email||'')}" placeholder="email@example.com" style="font-size:13px;padding:8px 10px;border:1.5px solid #e2e8f0;border-radius:7px;width:100%;box-sizing:border-box;font-family:inherit"/>
+        </div>
+        <div class="detail-item">
+          <label>Phone Number</label>
+          <input type="text" id="edit-phone" value="${esc(r.phone||'')}" placeholder="+44 7700 000000" style="font-size:13px;padding:8px 10px;border:1.5px solid #e2e8f0;border-radius:7px;width:100%;box-sizing:border-box;font-family:inherit"/>
+        </div>
+        <div class="detail-item">
+          <label>Status</label>
+          <select id="edit-status" class="form-input" style="font-size:13px;padding:8px 10px;border:1.5px solid #e2e8f0;border-radius:7px;width:100%">
+            ${STATUSES.map(s => `<option value="${s}" ${(r.status||'New')===s?'selected':''}>${s}</option>`).join('')}
+          </select>
+        </div>
+        <div class="detail-item">
+          <label>Booked By (Staff)</label>
+          <input type="text" id="edit-booked-by" class="form-input" value="${esc(r.booked_by||'')}" placeholder="Staff member name" style="font-size:13px;padding:8px 10px;border:1.5px solid #e2e8f0;border-radius:7px;width:100%;box-sizing:border-box"/>
+        </div>
+
+        <hr class="detail-divider"/>
+        <div class="detail-section">📅 Stage Dates</div>
+
+        <div class="detail-item">
+          <label>1st Call Date</label>
+          <input type="date" id="edit-date-1st" class="form-input" value="${r.date_1st_interview||''}" style="font-size:13px;padding:8px 10px;border:1.5px solid #e2e8f0;border-radius:7px;width:100%;box-sizing:border-box"/>
+        </div>
+        <div class="detail-item">
+          <label>Interview Confirm Date</label>
+          <input type="date" id="edit-date-confirm" class="form-input" value="${r.date_interview_confirm||''}" style="font-size:13px;padding:8px 10px;border:1.5px solid #e2e8f0;border-radius:7px;width:100%;box-sizing:border-box"/>
+        </div>
+        <div class="detail-item">
+          <label>2nd Interview Date</label>
+          <input type="date" id="edit-date-2nd" class="form-input" value="${r.date_2nd_interview||''}" style="font-size:13px;padding:8px 10px;border:1.5px solid #e2e8f0;border-radius:7px;width:100%;box-sizing:border-box"/>
+        </div>
+        <div class="detail-item">
+          <label>Final Interview Date</label>
+          <input type="date" id="edit-date-final" class="form-input" value="${r.date_final_interview||''}" style="font-size:13px;padding:8px 10px;border:1.5px solid #e2e8f0;border-radius:7px;width:100%;box-sizing:border-box"/>
+        </div>
+        <div class="detail-item">
+          <label>Interview Done Date</label>
+          <input type="date" id="edit-date-done" class="form-input" value="${r.date_interview_done||''}" style="font-size:13px;padding:8px 10px;border:1.5px solid #e2e8f0;border-radius:7px;width:100%;box-sizing:border-box"/>
+        </div>
+        <div class="detail-item">
+          <label>Shoot Booked Date</label>
+          <input type="date" id="edit-date-shoot" class="form-input" value="${r.date_shoot_booked||''}" style="font-size:13px;padding:8px 10px;border:1.5px solid #e2e8f0;border-radius:7px;width:100%;box-sizing:border-box"/>
+        </div>
+
+        <div class="detail-item" style="grid-column:1/-1">
+          <label>Shoot Details</label>
+          <input type="text" id="edit-shoot-details" class="form-input" value="${esc(r.shoot_booked||'')}" placeholder="e.g. Fashion shoot 15 May for Zara" style="font-size:13px;padding:8px 10px;border:1.5px solid #e2e8f0;border-radius:7px;width:100%;box-sizing:border-box"/>
+        </div>
+        <div class="detail-item" style="grid-column:1/-1">
+          <label>Notes</label>
+          <textarea id="edit-notes" placeholder="Call notes, impressions, follow-up reminders…" style="font-size:13px;padding:8px 10px;border:1.5px solid #e2e8f0;border-radius:7px;width:100%;box-sizing:border-box;min-height:80px;resize:vertical;font-family:inherit">${esc(r.notes||'')}</textarea>
+        </div>
+
+        <div style="grid-column:1/-1;display:flex;gap:10px;align-items:center;margin-top:4px">
+          <button onclick="saveLeadEdit(${r.id})" style="padding:10px 24px;background:#0d1b2a;color:#fff;border:none;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">Save Changes</button>
+          <button class="btn-invite" style="font-size:13px;padding:10px 18px" ${alreadyInvited?'disabled':''} onclick="inviteLeadFromModal(${r.id})">
+            ${alreadyInvited ? '✓ Already Invited' : '📩 Send Invite'}
+          </button>
+        </div>
+      </div>
+    `;
+    document.getElementById('modal-overlay').classList.add('active');
+  }
+
+  async function saveLeadEdit(id) {
+    const data = {
+      email:                 document.getElementById('edit-email').value,
+      phone:                 document.getElementById('edit-phone').value,
+      status:                document.getElementById('edit-status').value,
+      booked_by:             document.getElementById('edit-booked-by').value,
+      date_1st_interview:    document.getElementById('edit-date-1st').value,
+      date_interview_confirm:document.getElementById('edit-date-confirm').value,
+      date_2nd_interview:    document.getElementById('edit-date-2nd').value,
+      date_final_interview:  document.getElementById('edit-date-final').value,
+      date_interview_done:   document.getElementById('edit-date-done').value,
+      date_shoot_booked:     document.getElementById('edit-date-shoot').value,
+      shoot_booked:          document.getElementById('edit-shoot-details').value,
+      notes:                 document.getElementById('edit-notes').value,
+    };
+    const res = await fetch(`/api/agent/leads/${id}/edit`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    if (res.ok) {
+      const r = leadsData.find(x => x.id === id);
+      if (r) Object.assign(r, data);
+      renderLeads(document.getElementById('search-box').value);
+      closeModal();
+      showToast('Saved!');
+    } else {
+      showToast('Save failed');
+    }
+  }
+
+  async function inviteLeadFromModal(id) {
+    const res = await fetch(`/api/agent/leads/${id}/invite`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({})
+    });
+    if (res.ok) {
+      const r = leadsData.find(x => x.id === id);
+      if (r) { r.invited = 1; r.invite_status = 'Invited'; r.status = 'Called - LM - Invitation Sent'; }
+      renderLeads(document.getElementById('search-box').value);
+      closeModal();
+      showToast('Invitation sent!');
+    }
+  }
+
+  function openAppView(id) {
+    const r = appsData.find(x => x.id === id);
+    if (!r) return;
+    const name = `${r.first_name || ''} ${r.last_name || ''}`.trim();
+    let skills = '—';
+    try { const s = JSON.parse(r.skills || '{}'); skills = Object.entries(s).filter(([,v])=>v).map(([k])=>k).join(', ') || '—'; } catch(e) {}
+    let interests = '—';
+    try { const arr = JSON.parse(r.interests || '[]'); interests = arr.join(', ') || '—'; } catch(e) {}
+    document.getElementById('modal-content').innerHTML = `
+      <h2>${esc(name) || 'Application'}</h2>
+      <div class="modal-sub">${esc(r.email || '—')} · ${esc(r.mobile || '—')} · Applied ${fmtDate(r.created_at)}</div>
+      <div class="detail-grid" style="margin-top:20px">
+        <div class="detail-section">Personal</div>
+        <div class="detail-item"><label>Date of Birth</label><p>${esc(r.dob||'—')}</p></div>
+        <div class="detail-item"><label>Age</label><p>${esc(r.age||'—')}</p></div>
+        <div class="detail-item"><label>Sex</label><p>${esc(r.sex||'—')}</p></div>
+        <div class="detail-item"><label>Nationality</label><p>${esc(r.nationality||'—')}</p></div>
+        <div class="detail-item"><label>Ethnic Origin</label><p>${esc(r.ethnic_origin||'—')}</p></div>
+        <div class="detail-item"><label>Landline</label><p>${esc(r.landline||'—')}</p></div>
+        <div class="detail-item" style="grid-column:1/-1"><label>Address</label><p>${esc(r.address||'—')} ${esc(r.postcode||'')}</p></div>
+        <div class="detail-item"><label>Website</label><p>${esc(r.website||'—')}</p></div>
+        <div class="detail-item"><label>Social Media</label><p>${esc(r.social_media||'—')}</p></div>
+        <hr class="detail-divider"/>
+        <div class="detail-section">Measurements</div>
+        <div class="detail-item"><label>Height</label><p>${esc(r.height||'—')}</p></div>
+        <div class="detail-item"><label>Weight</label><p>${esc(r.weight||'—')}</p></div>
+        <div class="detail-item"><label>Bust/Chest</label><p>${esc(r.bust_chest||'—')}</p></div>
+        <div class="detail-item"><label>Waist</label><p>${esc(r.waist||'—')}</p></div>
+        <div class="detail-item"><label>Hips</label><p>${esc(r.hips||'—')}</p></div>
+        <div class="detail-item"><label>Shoe Size</label><p>${esc(r.shoe_size||'—')}</p></div>
+        <div class="detail-item"><label>Eye Colour</label><p>${esc(r.eye_color||'—')}</p></div>
+        <div class="detail-item"><label>Hair Colour</label><p>${esc(r.hair_color||'—')}</p></div>
+        <div class="detail-item"><label>Complexion</label><p>${esc(r.complexion||'—')}</p></div>
+        <div class="detail-item"><label>Suit/Dress Size</label><p>${esc(r.suit_dress_size||'—')}</p></div>
+        <hr class="detail-divider"/>
+        <div class="detail-section">Skills & Experience</div>
+        <div class="detail-item"><label>Skills</label><p>${esc(skills)}</p></div>
+        <div class="detail-item"><label>Languages</label><p>${esc(r.languages||'—')}</p></div>
+        <div class="detail-item" style="grid-column:1/-1"><label>Interests</label><p>${esc(interests)}</p></div>
+        <div class="detail-item" style="grid-column:1/-1"><label>Experience</label><p style="white-space:pre-wrap;line-height:1.6">${esc(r.experience||'—')}</p></div>
+        <div class="detail-item"><label>Availability</label><p>${esc(r.availability||'—')}</p></div>
+        <div class="detail-item"><label>Has Portfolio</label><p>${esc(r.has_portfolio||'—')}</p></div>
+        ${r.additional_info?`<div class="detail-item" style="grid-column:1/-1"><label>Additional Info</label><p>${esc(r.additional_info)}</p></div>`:''}
+        <hr class="detail-divider"/>
+        <div style="grid-column:1/-1">
+          <button onclick="openAppEdit(${r.id})" style="padding:10px 20px;background:#0d1b2a;color:#fff;border:none;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">✏️ Edit Interview Notes</button>
+        </div>
+      </div>
+    `;
+    document.getElementById('modal-overlay').classList.add('active');
+  }
+
+  function openAppEdit(id) {
+    const r = appsData.find(x => x.id === id);
+    if (!r) return;
+    const name = `${r.first_name || ''} ${r.last_name || ''}`.trim();
+    document.getElementById('modal-content').innerHTML = `
+      <h2>${esc(name) || 'Application'}</h2>
+      <div class="modal-sub">${esc(r.email || '—')} · ${esc(r.mobile || '—')} · Applied ${fmtDate(r.created_at)}</div>
+      <div class="detail-grid" style="margin-top:20px">
+        <div class="detail-section">📧 Contact Details</div>
+        <div class="detail-item">
+          <label>Email Address</label>
+          <input type="email" id="app-email" value="${esc(r.email||'')}" placeholder="email@example.com" style="font-size:13px;padding:8px 10px;border:1.5px solid #e2e8f0;border-radius:7px;width:100%;box-sizing:border-box;font-family:inherit"/>
+        </div>
+        <div class="detail-item">
+          <label>Mobile Number</label>
+          <input type="text" id="app-mobile" value="${esc(r.mobile||'')}" placeholder="+44 7700 000000" style="font-size:13px;padding:8px 10px;border:1.5px solid #e2e8f0;border-radius:7px;width:100%;box-sizing:border-box;font-family:inherit"/>
+        </div>
+        <div class="detail-section" style="margin-top:8px">🗂 Office Use Only</div>
+        <div class="detail-item">
+          <label>Interviewed By</label>
+          <input type="text" id="app-interviewed-by" value="${esc(r.interviewed_by||'')}" placeholder="Staff name" style="font-size:13px;padding:8px 10px;border:1.5px solid #e2e8f0;border-radius:7px;width:100%;box-sizing:border-box;font-family:inherit"/>
+        </div>
+        <div class="detail-item">
+          <label>Interview Date</label>
+          <input type="date" id="app-interview-date" value="${r.interview_date||''}" style="font-size:13px;padding:8px 10px;border:1.5px solid #e2e8f0;border-radius:7px;width:100%;box-sizing:border-box;font-family:inherit"/>
+        </div>
+        <div class="detail-item" style="grid-column:1/-1">
+          <label>Outcome</label>
+          <select id="app-outcome" style="font-size:13px;padding:8px 10px;border:1.5px solid #e2e8f0;border-radius:7px;width:100%;font-family:inherit">
+            <option value="">— Select —</option>
+            <option value="Accepted" ${r.outcome==='Accepted'?'selected':''}>Accepted</option>
+            <option value="On Hold" ${r.outcome==='On Hold'?'selected':''}>On Hold</option>
+            <option value="Declined" ${r.outcome==='Declined'?'selected':''}>Declined</option>
+          </select>
+        </div>
+        <div class="detail-item" style="grid-column:1/-1">
+          <label>Internal Notes</label>
+          <textarea id="app-admin-notes" placeholder="Internal notes visible to admin and agents…" style="font-size:13px;padding:8px 10px;border:1.5px solid #e2e8f0;border-radius:7px;width:100%;box-sizing:border-box;min-height:100px;resize:vertical;font-family:inherit">${esc(r.admin_notes||'')}</textarea>
+        </div>
+        <div style="grid-column:1/-1;margin-top:4px">
+          <button onclick="saveAppEdit(${r.id})" style="padding:10px 24px;background:#0d1b2a;color:#fff;border:none;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">Save Changes</button>
+        </div>
+      </div>
+    `;
+    document.getElementById('modal-overlay').classList.add('active');
+  }
+
+  async function saveAppEdit(id) {
+    const data = {
+      email:          document.getElementById('app-email').value,
+      mobile:         document.getElementById('app-mobile').value,
+      interviewed_by: document.getElementById('app-interviewed-by').value,
+      interview_date: document.getElementById('app-interview-date').value,
+      outcome:        document.getElementById('app-outcome').value,
+      admin_notes:    document.getElementById('app-admin-notes').value,
+    };
+    const res = await fetch(`/api/agent/applications/${id}/edit`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    if (res.ok) {
+      const r = appsData.find(x => x.id === id);
+      if (r) Object.assign(r, data);
+      closeModal();
+      showToast('Saved!');
+    } else {
+      showToast('Save failed');
+    }
+  }
+
+  async function inviteFromModal(id) {
+    const res = await fetch(`/api/agent/applications/${id}/invite`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({})
+    });
+    if (res.ok) {
+      const r = appsData.find(x => x.id === id);
+      if (r) r.status = 'Invited to Interview';
+      renderApps(document.getElementById('search-box').value);
+      closeModal();
+      showToast('Interview invitation sent!');
+    }
+  }
+
+  // ── Panel switching ──────────────────────────────────────────────────────────
+  function showPanel(name) {
+    currentPanel = name;
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.getElementById(`panel-${name}`).classList.add('active');
+    document.getElementById(`nav-${name}`).classList.add('active');
+    if (document.getElementById('search-box')) document.getElementById('search-box').value = '';
+    if (name === 'leads') {
+      document.getElementById('page-title').textContent = 'Master Database';
+      document.getElementById('page-sub').textContent = 'All contacts & leads';
+      if (!leadsData.length) loadLeads(); else renderLeads();
+    } else {
+      document.getElementById('page-title').textContent = 'Applications';
+      document.getElementById('page-sub').textContent = 'Pre-screening applications';
+      if (!appsData.length) loadApps(); else renderApps();
+    }
+  }
+
+  let searchTimer;
+  function applySearch() {
+    const q = document.getElementById('search-box').value;
+    const status = document.getElementById('status-filter').value;
+    if (currentPanel === 'leads') {
+      clearTimeout(searchTimer);
+      searchTimer = setTimeout(() => loadLeads(1, q, status), 400);
+    } else {
+      renderApps(q);
+    }
+  }
+
+  function renderLeadsPagination() {
+    const existing = document.getElementById('leads-pagination');
+    if (existing) existing.remove();
+    if (leadsTotalPages <= 1) return;
+    const div = document.createElement('div');
+    div.id = 'leads-pagination';
+    div.style.cssText = 'display:flex;align-items:center;justify-content:space-between;padding:14px 22px;border-top:1px solid #e8edf2;font-size:13px;color:#4a5568;';
+    div.innerHTML = `
+      <span>Page ${leadsPage} of ${leadsTotalPages} &nbsp;·&nbsp; ${leadsTotal.toLocaleString()} records</span>
+      <div style="display:flex;gap:8px">
+        <button onclick="loadLeads(${leadsPage-1}, leadsSearch, leadsStatusFilter)" ${leadsPage<=1?'disabled':''} style="padding:6px 14px;border:1.5px solid #e2e8f0;border-radius:6px;background:#fff;cursor:pointer;font-size:13px;${leadsPage<=1?'opacity:0.4':''}">← Prev</button>
+        <button onclick="loadLeads(${leadsPage+1}, leadsSearch, leadsStatusFilter)" ${leadsPage>=leadsTotalPages?'disabled':''} style="padding:6px 14px;border:1.5px solid #e2e8f0;border-radius:6px;background:#fff;cursor:pointer;font-size:13px;${leadsPage>=leadsTotalPages?'opacity:0.4':''}">Next →</button>
+      </div>
+    `;
+    document.querySelector('#panel-leads .table-card').appendChild(div);
+  }
+
+  function closeModal(e) {
+    if (e && e.target !== document.getElementById('modal-overlay')) return;
+    document.getElementById('modal-overlay').classList.remove('active');
+  }
+
+  async function logout() {
+    await fetch('/api/agent/logout', { method: 'POST' });
+    window.location = '/admin/agent-login.html';
+  }
+
+  // ── Helpers ──────────────────────────────────────────────────────────────────
+  function esc(s) {
+    if (!s) return '';
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+  function fmtDate(iso) {
+    if (!iso) return '—';
+    const d = new Date(iso);
+    return d.toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' });
+  }
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2500);
+  }
+
+  // ── Init ─────────────────────────────────────────────────────────────────────
+  loadLeads();
+  loadApps();
+</script>
+</body>
+</html>

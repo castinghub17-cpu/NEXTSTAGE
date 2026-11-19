@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" type="image/png" sizes="192x192" href="https://www.nextstagetalent.co.uk/favicon-192.png">
+  <link rel="icon" type="image/png" sizes="48x48" href="https://www.nextstagetalent.co.uk/favicon-48.png">
+  <link rel="icon" type="image/png" href="https://www.nextstagetalent.co.uk/favicon.png" sizes="64x64">
+  <link rel="icon" href="https://www.nextstagetalent.co.uk/favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="https://www.nextstagetalent.co.uk/favicon-192.png">
+  <title>Admin Login — Prestige Agency</title>
+  <link rel="stylesheet" href="../css/style.css" />
+  <style>
+    body { background: var(--black); display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+    .login-box {
+      background: var(--white);
+      border-radius: 12px;
+      padding: 56px 48px;
+      width: 100%;
+      max-width: 420px;
+      box-shadow: var(--shadow-lg);
+    }
+    .login-logo { font-family: 'Playfair Display', serif; font-size: 1.5rem; font-weight: 700; color: var(--black); margin-bottom: 8px; }
+    .login-logo span { color: var(--accent); }
+    .login-sub { font-size: 13px; color: var(--mid); margin-bottom: 40px; letter-spacing: 0.08em; text-transform: uppercase; }
+    .pass-wrap { position: relative; }
+    .pass-toggle { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); cursor: pointer; font-size: 14px; color: var(--mid); background: none; border: none; padding: 4px; }
+    .login-error { display: none; background: #fff5f0; color: #c0533a; padding: 12px 16px; border-radius: 4px; font-size: 13px; margin-bottom: 16px; }
+  </style>
+</head>
+<body>
+  <div class="login-box">
+    <div class="login-logo">Prestige<span>.</span></div>
+    <div class="login-sub">Admin Panel</div>
+    <div class="login-error" id="login-error">Incorrect password. Please try again.</div>
+    <form id="login-form">
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <div class="pass-wrap">
+          <input type="password" id="password" name="password" class="form-input" placeholder="Enter admin password" required autocomplete="current-password" />
+          <button type="button" class="pass-toggle" onclick="togglePass()">👁</button>
+        </div>
+      </div>
+      <button type="submit" class="submit-btn" id="login-btn" style="width:100%; justify-content:center; margin-top:8px;">
+        Sign In
+      </button>
+    </form>
+    <p style="margin-top:28px; text-align:center; font-size:12px; color:var(--light);">This page is for authorised personnel only.</p>
+  </div>
+
+  <script>
+    // Redirect if already logged in
+    fetch('/api/admin/check').then(r=>r.json()).then(d=>{ if(d.authenticated) window.location='/admin/dashboard.html'; });
+
+    function togglePass() {
+      const f = document.getElementById('password');
+      f.type = f.type === 'password' ? 'text' : 'password';
+    }
+
+    document.getElementById('login-form').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const btn = document.getElementById('login-btn');
+      const err = document.getElementById('login-error');
+      err.style.display = 'none';
+      btn.disabled = true;
+      btn.textContent = 'Signing in…';
+
+      const res = await fetch('/api/admin/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: document.getElementById('password').value })
+      });
+
+      if (res.ok) {
+        window.location = '/admin/dashboard.html';
+      } else {
+        err.style.display = 'block';
+        btn.disabled = false;
+        btn.textContent = 'Sign In';
+      }
+    });
+  </script>
+</body>
+</html>

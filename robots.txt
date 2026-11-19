@@ -1,0 +1,6 @@
+User-agent: *
+Disallow: /admin/
+Disallow: /api/
+Disallow: /uploads/
+
+Sitemap: https://www.nextstagetalent.co.uk/sitemap.xml

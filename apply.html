@@ -1,0 +1,923 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="description" content="Apply to join Next Stage Talent — complete our pre-screening application form for acting, modelling, and extra work opportunities in London and across the UK." />
+  <meta name="keywords" content="apply casting agency London, join modelling agency UK, acting application form, Next Stage Talent apply" />
+  <meta name="robots" content="index, follow" />
+  <meta name="author" content="Next Stage Talent" />
+  <link rel="canonical" href="https://www.nextstagetalent.co.uk/apply.html" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Apply to Join — Next Stage Talent Agency" />
+  <meta property="og:description" content="Complete our pre-screening application form to be considered for acting, modelling, and extra work." />
+  <meta property="og:url" content="https://www.nextstagetalent.co.uk/apply.html" />
+  <meta property="og:site_name" content="Next Stage Talent" />
+  
+  
+  <title>Apply to Join — Next Stage Talent Agency</title>
+  <link rel="icon" type="image/png" sizes="192x192" href="https://www.nextstagetalent.co.uk/favicon-192.png">
+  <link rel="icon" type="image/png" sizes="48x48" href="https://www.nextstagetalent.co.uk/favicon-48.png">
+  <link rel="icon" type="image/png" href="https://www.nextstagetalent.co.uk/favicon.png" sizes="64x64">
+  <link rel="icon" href="https://www.nextstagetalent.co.uk/favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="https://www.nextstagetalent.co.uk/favicon-192.png">
+  <link rel="stylesheet" href="css/style.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    /* ── Apply page extras ──────────────────────────────────── */
+    .apply-section-head {
+      font-size: 11px; font-weight: 700; letter-spacing: 2px;
+      text-transform: uppercase; color: var(--blue-deep);
+      border-bottom: 2px solid var(--blue-soft);
+      padding-bottom: 10px; margin: 36px 0 22px;
+    }
+    .apply-section-head:first-of-type { margin-top: 0; }
+
+    .form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+    @media(max-width:700px){
+      .form-row-3 { grid-template-columns: 1fr; }
+      .form-row   { grid-template-columns: 1fr; }
+    }
+
+    /* Radio group */
+    .radio-row { display: flex; gap: 20px; flex-wrap: wrap; padding-top: 6px; }
+    .radio-row label { display: flex; align-items: center; gap: 7px; font-size: 14px; color: var(--dark); cursor: pointer; }
+    .radio-row input[type="radio"] { accent-color: var(--blue-deep); width: 15px; height: 15px; }
+
+    /* Skills table */
+    .skills-table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+    .skills-table th {
+      background: var(--black); color: var(--white);
+      padding: 10px 16px; text-align: left;
+      font-size: 11px; letter-spacing: 1.2px; text-transform: uppercase;
+      font-family: 'Inter', sans-serif;
+    }
+    .skills-table td { padding: 10px 16px; border-bottom: 1px solid var(--border); }
+    .skills-table tr:nth-child(even) td { background: var(--blue-pale); }
+    .skills-table .level-opts { display: flex; gap: 16px; flex-wrap: wrap; }
+    .skills-table .level-opts label { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--dark); cursor: pointer; }
+    .skills-table input[type="radio"] { accent-color: var(--blue-deep); }
+
+    /* Interest chips */
+    .interest-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+    .interest-chip {
+      display: flex; align-items: center; gap: 8px;
+      padding: 10px 14px; border: 1.5px solid var(--border);
+      border-radius: 100px; font-size: 13px; color: var(--dark);
+      cursor: pointer; transition: all 0.2s; background: var(--white);
+    }
+    .interest-chip:hover { border-color: var(--blue-deep); color: var(--blue-deep); background: var(--blue-pale); }
+    .interest-chip input[type="checkbox"] { accent-color: var(--blue-deep); width: 14px; height: 14px; }
+    .interest-chip.checked { border-color: var(--blue-deep); background: var(--blue-pale); color: var(--blue-deep); font-weight: 600; }
+
+    /* Signature */
+    .sig-wrap {
+      border: 1.5px solid var(--border); border-radius: var(--radius);
+      background: var(--white); overflow: hidden; position: relative;
+    }
+    #sigCanvas { display: block; width: 100%; height: 120px; cursor: crosshair; touch-action: none; }
+    .sig-hint {
+      position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+      font-size: 13px; color: var(--light); pointer-events: none; transition: opacity 0.2s;
+    }
+    .btn-clear-sig {
+      font-size: 12px; color: var(--mid); background: none;
+      border: 1px solid var(--border); border-radius: 100px;
+      padding: 5px 14px; cursor: pointer; margin-top: 8px;
+      transition: all 0.2s;
+    }
+    .btn-clear-sig:hover { border-color: var(--blue-deep); color: var(--blue-deep); }
+
+    /* Notice box */
+    .notice-box {
+      background: var(--black); color: rgba(255,255,255,0.72);
+      border-radius: 8px; padding: 20px 24px; font-size: 13px;
+      line-height: 1.8; margin: 32px 0;
+    }
+    .notice-box strong { color: var(--blue-main); }
+
+    /* Date strip */
+    .date-strip { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .date-strip input { width: 62px; text-align: center; }
+    .date-strip input.year { width: 82px; }
+    .date-strip span { color: var(--light); font-size: 16px; }
+
+    /* Form card */
+    .apply-card {
+      background: var(--white); border: 1px solid var(--border);
+      border-radius: 12px; padding: 40px 44px;
+      box-shadow: var(--shadow-sm);
+    }
+    @media(max-width:600px){ .apply-card { padding: 24px 20px; } }
+
+    /* Success overlay */
+    #successOverlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(13,27,42,0.88); z-index: 2000;
+      align-items: center; justify-content: center;
+    }
+    #successOverlay.show { display: flex; }
+    .success-card {
+      background: var(--white); border-radius: 16px;
+      padding: 52px 48px; text-align: center; max-width: 460px; width: 90%;
+    }
+    .success-icon { font-size: 56px; margin-bottom: 16px; }
+    .success-card h2 { font-family: 'Playfair Display', serif; font-size: 26px; margin-bottom: 12px; color: var(--black); }
+    .success-card p { font-size: 14px; color: var(--mid); margin-bottom: 28px; line-height: 1.75; }
+    .success-btns { display: flex; flex-direction: column; gap: 10px; align-items: center; }
+    .btn-dl {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 14px 32px; background: var(--blue-deep); color: var(--white);
+      font-size: 13px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+      border-radius: 100px; transition: all 0.3s; cursor: pointer; border: none;
+      box-shadow: 0 4px 16px rgba(74,130,166,0.35);
+    }
+    .btn-dl:hover { background: var(--blue-darker); transform: translateY(-2px); }
+    .btn-another { font-size: 13px; color: var(--mid); background: none; border: none; cursor: pointer; text-decoration: underline; }
+    .btn-another:hover { color: var(--blue-deep); }
+  </style>
+</head>
+<body>
+
+
+<div class="page-content" style="padding-top:0;">
+
+  <!-- ── Page Hero ──────────────────────────────────────────── -->
+  <div class="page-hero">
+    <div class="page-hero-bg" style="background-image:url('https://images.unsplash.com/photo-1555651780-810ba1617c96?w=1920&q=80')"></div>
+    <div class="page-hero-overlay"></div>
+    <div class="container">
+      <div class="page-hero-content">
+        <span class="section-label">Next Stage Talent</span>
+        <h1>Application Form</h1>
+        <div class="divider"></div>
+        <p>Complete the form below and our team will be in touch to invite you for an interview.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Form ────────────────────────────────────────────────── -->
+  <section style="background:var(--blue-pale); padding:80px 0;">
+    <div class="container">
+      <div style="max-width:860px; margin:0 auto;">
+
+        <div style="text-align:center; margin-bottom:48px;">
+          <span class="section-label">Pre-Screening Application</span>
+          <h2 class="section-title" style="margin-top:12px;">Tell Us About Yourself</h2>
+          <p class="section-sub" style="margin:0 auto;">Please complete all sections accurately. All information is kept strictly confidential.</p>
+        </div>
+
+        <!-- Spinner while sending -->
+        <div id="sendingOverlay" style="display:none; position:fixed; inset:0; background:rgba(13,27,42,0.75); z-index:1999; align-items:center; justify-content:center; flex-direction:column; gap:16px; color:#fff; font-size:15px;">
+          <div style="width:40px;height:40px;border:3px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:spin 0.8s linear infinite;"></div>
+          <span id="sendingMsg">Submitting your application…</span>
+        </div>
+        <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
+
+        <form id="applyForm" novalidate>
+          <div class="apply-card">
+
+            <!-- DATE -->
+            <div class="apply-section-head">Application Date</div>
+            <div class="form-group">
+              <div class="date-strip">
+                <span style="font-size:13px;color:var(--mid);">Date:</span>
+                <input type="number" id="dateDay" class="form-input" min="1" max="31" placeholder="DD" style="width:62px;text-align:center;" />
+                <span>/</span>
+                <input type="number" id="dateMon" class="form-input" min="1" max="12" placeholder="MM" style="width:62px;text-align:center;" />
+                <span>/</span>
+                <input type="number" id="dateYear" class="form-input year" min="2020" max="2099" placeholder="YYYY" style="width:82px;text-align:center;" />
+              </div>
+            </div>
+
+            <!-- PERSONAL DETAILS -->
+            <div class="apply-section-head">Personal Details</div>
+            <div class="form-row" style="margin-bottom:20px;">
+              <div class="form-group" style="margin:0;">
+                <label class="form-label" for="firstName">First Name *</label>
+                <input type="text" id="firstName" class="form-input" placeholder="Enter your first name" required />
+              </div>
+              <div class="form-group" style="margin:0;">
+                <label class="form-label" for="lastName">Last Name *</label>
+                <input type="text" id="lastName" class="form-input" placeholder="Enter your last name" required />
+              </div>
+            </div>
+            <div class="form-row" style="margin-bottom:20px;">
+              <div class="form-group" style="margin:0;">
+                <label class="form-label" for="dob">Date of Birth *</label>
+                <input type="date" id="dob" class="form-input" required />
+              </div>
+              <div class="form-group" style="margin:0;">
+                <label class="form-label" for="age">Age</label>
+                <input type="number" id="age" class="form-input" min="0" max="120" placeholder="e.g. 25" />
+              </div>
+            </div>
+            <div class="form-row" style="margin-bottom:20px;">
+              <div class="form-group" style="margin:0;">
+                <label class="form-label" for="mobile">Mobile *</label>
+                <input type="tel" id="mobile" class="form-input" placeholder="+44 7700 000000" required />
+              </div>
+              <div class="form-group" style="margin:0;">
+                <label class="form-label" for="landline">Landline</label>
+                <input type="tel" id="landline" class="form-input" placeholder="Optional" />
+              </div>
+            </div>
+            <div class="form-row" style="margin-bottom:20px;">
+              <div class="form-group" style="margin:0;">
+                <label class="form-label" for="email">Email Address *</label>
+                <input type="email" id="email" class="form-input" placeholder="your@email.com" required />
+              </div>
+              <div class="form-group" style="margin:0;">
+                <label class="form-label">Sex</label>
+                <div class="radio-row">
+                  <label><input type="radio" name="sex" value="Male" /> Male</label>
+                  <label><input type="radio" name="sex" value="Female" /> Female</label>
+                  <label><input type="radio" name="sex" value="Non-binary" /> Non-binary</label>
+                  <label><input type="radio" name="sex" value="Prefer not to say" /> Prefer not to say</label>
+                </div>
+              </div>
+            </div>
+            <div class="form-row" style="margin-bottom:0;">
+              <div class="form-group">
+                <label class="form-label" for="nationality">Nationality</label>
+                <input type="text" id="nationality" class="form-input" placeholder="e.g. British" />
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="ethnicOrigin">Ethnic Origin</label>
+                <input type="text" id="ethnicOrigin" class="form-input" placeholder="e.g. White British" />
+              </div>
+            </div>
+
+            <!-- ADDRESS -->
+            <div class="apply-section-head">Address &amp; Online Presence</div>
+            <div class="form-group">
+              <label class="form-label" for="address">Address</label>
+              <input type="text" id="address" class="form-input" placeholder="Street address" />
+            </div>
+            <div class="form-row" style="margin-bottom:20px;">
+              <div class="form-group" style="margin:0;">
+                <label class="form-label" for="postcode">Postcode</label>
+                <input type="text" id="postcode" class="form-input" placeholder="e.g. W1A 1AA" />
+              </div>
+              <div class="form-group" style="margin:0;">
+                <label class="form-label" for="website">Personal Website</label>
+                <input type="url" id="website" class="form-input" placeholder="https://" />
+              </div>
+            </div>
+            <div class="form-row" style="margin-bottom:20px;">
+              <div class="form-group" style="margin:0;">
+                <label class="form-label" for="socialMedia">Facebook / Twitter / Instagram</label>
+                <input type="text" id="socialMedia" class="form-input" placeholder="@yourhandle" />
+              </div>
+              <div class="form-group" style="margin:0;">
+                <label class="form-label" for="spotlightPin">Spotlight PIN</label>
+                <input type="text" id="spotlightPin" class="form-input" placeholder="If applicable" />
+              </div>
+            </div>
+            <div class="form-row" style="margin-bottom:20px;">
+              <div class="form-group" style="margin:0;">
+                <label class="form-label" for="equityNumber">Equity Number</label>
+                <input type="text" id="equityNumber" class="form-input" placeholder="If applicable" />
+              </div>
+              <div class="form-group" style="margin:0;">
+                <label class="form-label" for="imdbLink">IMDb Profile</label>
+                <input type="text" id="imdbLink" class="form-input" placeholder="e.g. imdb.com/name/nm..." />
+              </div>
+            </div>
+
+            <!-- EMPLOYMENT -->
+            <div class="apply-section-head">Employment &amp; Availability</div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" for="currentEmployment">Current Employment</label>
+                <input type="text" id="currentEmployment" class="form-input" placeholder="e.g. Part-time, Student, Unemployed" />
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="availability">Availability</label>
+                <input type="text" id="availability" class="form-input" placeholder="e.g. Weekdays, Full-time, Flexible" />
+              </div>
+            </div>
+
+            <!-- MEASUREMENTS -->
+            <div class="apply-section-head">Measurements</div>
+            <div class="form-row-3" style="margin-bottom:20px;">
+              <div class="form-group" style="margin:0;">
+                <label class="form-label" for="height">Height</label>
+                <input type="text" id="height" class="form-input" placeholder='e.g. 5&apos;8" / 173cm' />
+              </div>
+              <div class="form-group" style="margin:0;">
+                <label class="form-label" for="weight">Weight</label>
+                <input type="text" id="weight" class="form-input" placeholder="e.g. 65kg" />
+              </div>
+              <div class="form-group" style="margin:0;">
+                <label class="form-label" for="bustChest">Bust / Chest</label>
+                <input type="text" id="bustChest" class="form-input" placeholder='e.g. 36"' />
+              </div>
+            </div>
+            <div class="form-row-3" style="margin-bottom:20px;">
+              <div class="form-group" style="margin:0;">
+                <label class="form-label" for="waist">Waist</label>
+                <input type="text" id="waist" class="form-input" placeholder='e.g. 28"' />
+              </div>
+              <div class="form-group" style="margin:0;">
+                <label class="form-label" for="hips">Hips</label>
+                <input type="text" id="hips" class="form-input" placeholder='e.g. 38"' />
+              </div>
+              <div class="form-group" style="margin:0;">
+                <label class="form-label" for="shoeSize">Shoe Size</label>
+                <input type="text" id="shoeSize" class="form-input" placeholder="e.g. 7 UK / 40 EU" />
+              </div>
+            </div>
+            <div class="form-row-3">
+              <div class="form-group">
+                <label class="form-label" for="eyeColor">Eye Colour</label>
+                <input type="text" id="eyeColor" class="form-input" placeholder="e.g. Brown" />
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="hairColor">Hair Colour</label>
+                <input type="text" id="hairColor" class="form-input" placeholder="e.g. Dark Brown" />
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="complexion">Complexion</label>
+                <input type="text" id="complexion" class="form-input" placeholder="e.g. Fair, Medium, Dark" />
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="suitDressSize">Suit Size / Dress Size</label>
+              <input type="text" id="suitDressSize" class="form-input" placeholder="e.g. Size 10 / 40 EU" />
+            </div>
+
+            <!-- SKILLS -->
+            <div class="apply-section-head">Skills</div>
+            <div style="overflow-x:auto;">
+              <table class="skills-table">
+                <thead>
+                  <tr>
+                    <th style="width:35%;">Skill</th>
+                    <th>Level (select one)</th>
+                  </tr>
+                </thead>
+                <tbody id="skillsBody"></tbody>
+              </table>
+            </div>
+            <div class="form-group" style="margin-top:20px;">
+              <label class="form-label" for="languages">Languages Spoken</label>
+              <input type="text" id="languages" class="form-input" placeholder="e.g. English, French, Spanish" />
+            </div>
+
+            <!-- INTERESTS -->
+            <div class="apply-section-head">Areas of Interest</div>
+            <div class="interest-grid" id="interestGrid"></div>
+
+            <!-- OTHER INFO -->
+            <div class="apply-section-head">Other Information</div>
+            <div class="form-group">
+              <label class="form-label" for="experience">Modelling / Acting Experience</label>
+              <textarea id="experience" class="form-input" placeholder="Describe any previous experience in front of a camera, acting, modelling, or extra work…"></textarea>
+            </div>
+            <div class="form-row" style="margin-bottom:20px;">
+              <div class="form-group" style="margin:0;">
+                <label class="form-label">Do you have a Portfolio?</label>
+                <div class="radio-row">
+                  <label><input type="radio" name="hasPortfolio" value="Yes" /> Yes — I will bring it</label>
+                  <label><input type="radio" name="hasPortfolio" value="No" /> No — not yet</label>
+                </div>
+              </div>
+              <div class="form-group" style="margin:0;">
+                <label class="form-label">Registered with another Agency?</label>
+                <div class="radio-row">
+                  <label><input type="radio" name="otherAgency" value="Yes" /> Yes</label>
+                  <label><input type="radio" name="otherAgency" value="No" /> No</label>
+                </div>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="otherAgencyName">If yes, please list agency name(s)</label>
+              <input type="text" id="otherAgencyName" class="form-input" placeholder="Agency name(s)" />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="additionalInfo">Anything else you'd like us to know?</label>
+              <textarea id="additionalInfo" class="form-input" style="min-height:80px;" placeholder="Additional information…"></textarea>
+            </div>
+
+            <!-- PHOTOS & CV -->
+            <div class="apply-section-head">Photos &amp; CV</div>
+            <p style="font-size:13px;color:var(--mid);margin:-10px 0 20px;">Upload a recent headshot or portfolio photos, and optionally your CV. Supported formats: JPG, PNG, PDF, DOC, DOCX.</p>
+
+            <div class="form-group">
+              <label class="form-label">Headshot Photo <span style="font-weight:400;color:var(--mid);">(1 photo only)</span></label>
+              <div id="photo-drop-zone" style="border:2px dashed var(--border);border-radius:10px;padding:28px 20px;text-align:center;cursor:pointer;transition:all .2s;background:var(--blue-pale);" onclick="document.getElementById('photo-file-input').click()">
+                <div style="font-size:32px;margin-bottom:8px;">📸</div>
+                <div style="font-size:14px;font-weight:600;color:var(--dark);margin-bottom:4px;">Click or drag your photo here</div>
+                <div style="font-size:12px;color:var(--mid);margin-bottom:14px;">JPG or PNG — max 2MB</div>
+                <input type="file" id="photo-file-input" accept="image/jpeg,image/png,.jpg,.jpeg,.png" style="display:none;">
+                <button type="button" class="btn-outline" style="padding:8px 20px;font-size:13px;" onclick="event.stopPropagation();document.getElementById('photo-file-input').click()">Choose Photo</button>
+              </div>
+              <div id="photo-preview" style="display:flex;flex-wrap:wrap;gap:10px;margin-top:12px;"></div>
+            </div>
+
+            <div class="form-group" style="margin-top:4px;">
+              <label class="form-label">CV / Résumé <span style="font-weight:400;color:var(--mid);">(optional)</span></label>
+              <div id="cv-drop-zone-apply" style="border:2px dashed var(--border);border-radius:10px;padding:24px 20px;text-align:center;cursor:pointer;transition:all .2s;background:var(--blue-pale);" onclick="document.getElementById('cv-file-input-apply').click()">
+                <div style="font-size:32px;margin-bottom:8px;">📄</div>
+                <div style="font-size:14px;font-weight:600;color:var(--dark);margin-bottom:4px;">Click or drag your CV here</div>
+                <div style="font-size:12px;color:var(--mid);margin-bottom:14px;">PDF or Word (.docx) — max 2MB</div>
+                <input type="file" id="cv-file-input-apply" accept=".pdf,.doc,.docx" style="display:none;">
+                <button type="button" class="btn-outline" style="padding:8px 20px;font-size:13px;" onclick="event.stopPropagation();document.getElementById('cv-file-input-apply').click()">Choose CV</button>
+              </div>
+              <div id="cv-preview-apply" style="margin-top:10px;"></div>
+            </div>
+
+            <!-- NOTICE -->
+            <div class="notice-box">
+              <strong>Important:</strong> Applicants under the age of 18 must be accompanied by a parent or guardian.
+              As per standard industry regulations, we cannot guarantee work. However, we work towards best practice of
+              finding and arranging auditions &amp; castings for all our models, actors &amp; artists.
+              <br/><br/>
+              <strong>Fees &amp; Commission:</strong> We do not charge any upfront fees.
+              A <strong>20% commission</strong> applies only once we have secured work for you.
+            </div>
+
+            <!-- SIGNATURE -->
+            <div class="apply-section-head">Applicant Signature</div>
+            <p style="font-size:13px;color:var(--mid);margin-bottom:12px;">By signing below, you confirm that all information provided is accurate and true.</p>
+            <div class="sig-wrap">
+              <canvas id="sigCanvas"></canvas>
+              <div class="sig-hint" id="sigHint">Sign here with your mouse or finger</div>
+            </div>
+            <div>
+              <button type="button" class="btn-clear-sig" onclick="clearSig()">✕ Clear Signature</button>
+            </div>
+
+          </div><!-- /apply-card -->
+
+          <!-- Error message -->
+          <div id="formError" style="display:none;color:#c0392b;background:#fdf0ef;border:1px solid #f5c6c3;border-radius:8px;padding:14px 18px;margin-top:20px;font-size:14px;"></div>
+
+          <!-- Submit -->
+          <div style="text-align:center; margin-top:36px;">
+            <button type="submit" class="submit-btn" id="submitBtn">
+              <span>Submit Application</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </button>
+            <p style="font-size:12px;color:var(--light);margin-top:14px;">Your information is kept strictly confidential.</p>
+          </div>
+
+        </form>
+      </div>
+    </div>
+  </section>
+
+</div><!-- /page-content -->
+
+<!-- ── Success Overlay ─────────────────────────────────────── -->
+<div id="successOverlay">
+  <div class="success-card">
+    <div class="success-icon">🎬</div>
+    <h2>Application Received!</h2>
+    <p>Thank you for applying to Next Stage Talent. Our team will review your application and be in touch within <strong>2–3 business days</strong> to discuss next steps.</p>
+    <div class="success-btns">
+      <button class="btn-dl" onclick="downloadPDF()">⬇ &nbsp;Download Your PDF Copy</button>
+      <button class="btn-another" onclick="startNew()">Submit another application</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="js/supabase-config.js"></script>
+<script src="js/main.js"></script>
+<script>
+// ── Skills & Interests Data ────────────────────────────────
+const SKILLS = ['Singing', 'Dancing', 'Sports', 'Swimming', 'Musical Instrument'];
+const INTERESTS = ['Extras', 'Commercial', 'Acting', 'Fashion', 'Theatre', 'Dance',
+                   'Catalogue', 'Promotions', 'Catwalk', 'Presenting', 'Voice Over',
+                   'Runway', 'Print', 'TV / Film', 'Music Video', 'Others'];
+
+// Build skills table
+const tbody = document.getElementById('skillsBody');
+SKILLS.forEach(skill => {
+  const key = skill.replace(/\s+/g, '_');
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td style="font-weight:500;">${skill}</td>
+    <td>
+      <div class="level-opts">
+        <label><input type="radio" name="skill_${key}" value="Beginner"/> Beginner</label>
+        <label><input type="radio" name="skill_${key}" value="Moderate"/> Moderate</label>
+        <label><input type="radio" name="skill_${key}" value="Expert"/> Expert</label>
+        <label><input type="radio" name="skill_${key}" value="N/A" checked/> N/A</label>
+      </div>
+    </td>`;
+  tbody.appendChild(tr);
+});
+
+// Build interest chips
+const igrid = document.getElementById('interestGrid');
+INTERESTS.forEach(interest => {
+  const label = document.createElement('label');
+  label.className = 'interest-chip';
+  label.innerHTML = `<input type="checkbox" value="${interest}"/> ${interest}`;
+  label.querySelector('input').addEventListener('change', function() {
+    label.classList.toggle('checked', this.checked);
+  });
+  igrid.appendChild(label);
+});
+
+// ── Signature Canvas ──────────────────────────────────────
+const canvas = document.getElementById('sigCanvas');
+const ctx = canvas.getContext('2d');
+const hint = document.getElementById('sigHint');
+let drawing = false, lx = 0, ly = 0, hasSig = false;
+
+function resizeCanvas() {
+  const dpr = window.devicePixelRatio || 1;
+  const r = canvas.getBoundingClientRect();
+  canvas.width = r.width * dpr; canvas.height = r.height * dpr;
+  ctx.scale(dpr, dpr);
+  ctx.strokeStyle = '#0d1b2a'; ctx.lineWidth = 2;
+  ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+}
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
+
+function getPos(e) {
+  const r = canvas.getBoundingClientRect();
+  const s = e.touches ? e.touches[0] : e;
+  return [s.clientX - r.left, s.clientY - r.top];
+}
+canvas.addEventListener('mousedown', e => { drawing = true; [lx, ly] = getPos(e); hint.style.opacity = '0'; hasSig = true; });
+canvas.addEventListener('mousemove', e => { if (!drawing) return; const [x,y]=getPos(e); ctx.beginPath(); ctx.moveTo(lx,ly); ctx.lineTo(x,y); ctx.stroke(); [lx,ly]=[x,y]; });
+canvas.addEventListener('mouseup', () => drawing = false);
+canvas.addEventListener('mouseleave', () => drawing = false);
+canvas.addEventListener('touchstart', e => { e.preventDefault(); drawing=true; [lx,ly]=getPos(e); hint.style.opacity='0'; hasSig=true; }, {passive:false});
+canvas.addEventListener('touchmove', e => { e.preventDefault(); if(!drawing) return; const [x,y]=getPos(e); ctx.beginPath(); ctx.moveTo(lx,ly); ctx.lineTo(x,y); ctx.stroke(); [lx,ly]=[x,y]; }, {passive:false});
+canvas.addEventListener('touchend', () => drawing = false);
+
+function clearSig() { ctx.clearRect(0,0,canvas.width,canvas.height); hint.style.opacity='1'; hasSig=false; }
+
+// ── Auto-fill date ────────────────────────────────────────
+const today = new Date();
+document.getElementById('dateDay').value = today.getDate();
+document.getElementById('dateMon').value = today.getMonth() + 1;
+document.getElementById('dateYear').value = today.getFullYear();
+
+// ── Collect form data ─────────────────────────────────────
+let lastData = {};
+
+function collectData() {
+  const f = document.getElementById('applyForm');
+  const d = {};
+  ['dateDay','dateMon','dateYear','firstName','lastName','dob','age','mobile','landline',
+   'email','nationality','ethnicOrigin','address','postcode','website','socialMedia',
+   'spotlightPin','equityNumber','imdbLink','currentEmployment','availability','height','weight',
+   'bustChest','waist','hips','shoeSize','eyeColor','hairColor','complexion',
+   'suitDressSize','languages','experience','otherAgencyName','additionalInfo'
+  ].forEach(id => { const el=document.getElementById(id); if(el) d[id]=el.value.trim(); });
+
+  ['sex','hasPortfolio','otherAgency'].forEach(name => {
+    const r = f.querySelector(`input[name="${name}"]:checked`);
+    d[name] = r ? r.value : '';
+  });
+
+  d.skills = {};
+  SKILLS.forEach(s => {
+    const r = f.querySelector(`input[name="skill_${s.replace(/\s+/g,'_')}"]:checked`);
+    if (r && r.value !== 'N/A') d.skills[s] = r.value;
+  });
+
+  d.interests = [];
+  document.querySelectorAll('#interestGrid input[type="checkbox"]:checked').forEach(cb => {
+    d.interests.push(cb.value);
+  });
+
+  d.signatureDataURL = canvas.toDataURL('image/png');
+
+  // Read source from URL parameter (?source=Reed, ?source=Indeed, etc.)
+  const urlParams = new URLSearchParams(window.location.search);
+  const srcParam = (urlParams.get('source') || 'Direct').trim();
+  d.source = srcParam.charAt(0).toUpperCase() + srcParam.slice(1).toLowerCase();
+  // Normalise known sources to proper casing
+  if (d.source.toLowerCase() === 'reed') d.source = 'Reed';
+  else if (d.source.toLowerCase() === 'indeed') d.source = 'Indeed';
+  else if (d.source.toLowerCase() === 'direct') d.source = 'Direct';
+
+  return d;
+}
+
+// ── Generate PDF (returns base64 string) ──────────────────
+function generatePDFBase64(d) {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+  const pageW=210, margin=18, cW=pageW-margin*2;
+  let y=0;
+  const DARK=[13,27,42], BLUE=[74,130,166], LIGHT_GREY=[240,247,252], MID=[107,124,141], LINE=[220,232,240], WHITE=[255,255,255];
+
+  // Header
+  doc.setFillColor(...DARK); doc.rect(0,0,210,38,'F');
+  doc.setFillColor(...BLUE); doc.rect(0,38,210,2,'F');
+  doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(...BLUE);
+  doc.text('NEXT STAGE TALENT — CASTING & MODELLING AGENCY', 105, 12, {align:'center'});
+  doc.setFontSize(16); doc.setTextColor(...WHITE);
+  doc.text('PRE-SCREENING APPLICATION FORM', 105, 23, {align:'center'});
+  doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(170,185,200);
+  doc.text(`Date: ${d.dateDay||'--'}/${d.dateMon||'--'}/${d.dateYear||'----'}`, 105, 31, {align:'center'});
+  y=50;
+
+  function sHead(title) {
+    if(y>262){doc.addPage();y=20;}
+    doc.setFont('helvetica','bold'); doc.setFontSize(7.5); doc.setTextColor(...BLUE);
+    doc.text(title.toUpperCase(), margin, y);
+    doc.setDrawColor(...BLUE); doc.setLineWidth(0.35);
+    doc.line(margin+doc.getTextWidth(title.toUpperCase())+2, y, pageW-margin, y);
+    y+=7;
+  }
+  function fRow(label, value, x, ry, w) {
+    doc.setFont('helvetica','bold'); doc.setFontSize(7); doc.setTextColor(...MID);
+    doc.text(label.toUpperCase(), x, ry);
+    doc.setFillColor(...LIGHT_GREY); doc.roundedRect(x, ry+1.5, w, 8, 1, 1, 'F');
+    doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(20,30,45);
+    doc.text(value||'—', x+2.5, ry+7);
+  }
+  function twoCol(pairs) {
+    const cw=(cW-5)/2;
+    for(let i=0;i<pairs.length;i+=2){
+      if(y>263){doc.addPage();y=20;}
+      const[l1,v1]=pairs[i]; const[l2,v2]=pairs[i+1]||['',''];
+      fRow(l1,v1,margin,y,cw);
+      if(l2)fRow(l2,v2,margin+cw+5,y,cw);
+      y+=13;
+    }
+  }
+  function fullRow(label,value){if(y>263){doc.addPage();y=20;}fRow(label,value,margin,y,cW);y+=13;}
+  function mlRow(label,value){
+    if(y>252){doc.addPage();y=20;}
+    doc.setFont('helvetica','bold');doc.setFontSize(7);doc.setTextColor(...MID);
+    doc.text(label.toUpperCase(),margin,y);y+=4;
+    const lines=doc.splitTextToSize(value||'—',cW-5);
+    const bh=Math.max(10,lines.length*4.5+4);
+    doc.setFillColor(...LIGHT_GREY);doc.roundedRect(margin,y,cW,bh,1,1,'F');
+    doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(20,30,45);
+    lines.forEach((line,i)=>doc.text(line,margin+2.5,y+5+i*4.5));
+    y+=bh+5;
+  }
+
+  sHead('Personal Details');
+  twoCol([['First Name',d.firstName],['Last Name',d.lastName],['Date of Birth',d.dob],['Age',d.age],['Mobile',d.mobile],['Landline',d.landline],['Email',d.email],['Sex',d.sex],['Nationality',d.nationality],['Ethnic Origin',d.ethnicOrigin]]);
+
+  sHead('Address & Online Presence');
+  fullRow('Address',d.address);
+  twoCol([['Postcode',d.postcode],['Website',d.website],['Social Media',d.socialMedia],['Spotlight PIN',d.spotlightPin],['Equity Number',d.equityNumber],['','']]);
+
+  sHead('Employment & Availability');
+  twoCol([['Current Employment',d.currentEmployment],['Availability',d.availability]]);
+
+  sHead('Measurements');
+  twoCol([['Height',d.height],['Weight',d.weight],['Bust / Chest',d.bustChest],['Waist',d.waist],['Hips',d.hips],['Shoe Size',d.shoeSize],['Eye Colour',d.eyeColor],['Hair Colour',d.hairColor],['Complexion',d.complexion],['Suit / Dress Size',d.suitDressSize]]);
+
+  sHead('Skills');
+  const sEntries=Object.entries(d.skills||{});
+  if(sEntries.length===0){doc.setFont('helvetica','italic');doc.setFontSize(8.5);doc.setTextColor(160,165,175);doc.text('No skills selected.',margin,y);y+=8;}
+  else twoCol(sEntries.map(([k,v])=>[k,v]));
+  fullRow('Languages',d.languages);
+
+  sHead('Areas of Interest');
+  if(y>265){doc.addPage();y=20;}
+  const ints=d.interests||[];
+  if(ints.length===0){doc.setFont('helvetica','italic');doc.setFontSize(8.5);doc.setTextColor(160,165,175);doc.text('None selected.',margin,y);y+=8;}
+  else {
+    const tw=40,th=7,tg=3; let tx=margin;
+    ints.forEach(it=>{
+      if(tx+tw>pageW-margin){tx=margin;y+=th+tg;}
+      if(y>270){doc.addPage();y=20;tx=margin;}
+      doc.setFillColor(...DARK);doc.roundedRect(tx,y-5,tw,th,1.5,1.5,'F');
+      doc.setFont('helvetica','bold');doc.setFontSize(7);doc.setTextColor(...BLUE);
+      doc.text(it,tx+tw/2,y-0.5,{align:'center'});
+      tx+=tw+tg;
+    });
+    y+=th+3;
+  }
+  y+=4;
+
+  sHead('Other Information');
+  mlRow('Modelling / Acting Experience',d.experience);
+  twoCol([['Has Portfolio',d.hasPortfolio],['Registered with other Agency',d.otherAgency]]);
+  if(d.otherAgencyName)fullRow('Other Agency Details',d.otherAgencyName);
+  if(d.additionalInfo)mlRow('Additional Information',d.additionalInfo);
+
+  if(y>230){doc.addPage();y=20;}
+  sHead('Important Notice');
+  const noticeText='Applicants under 18 must be accompanied by a parent or guardian. As per standard industry regulations, we cannot guarantee work. We work towards best practice of finding and arranging auditions & castings for all our models, actors & artists. No upfront fees — 20% commission applies only once we have secured work for you.';
+  const nLines=doc.splitTextToSize(noticeText,cW-8);
+  const nH=nLines.length*4.2+8;
+  doc.setFillColor(...DARK);doc.roundedRect(margin,y,cW,nH,2,2,'F');
+  doc.setFont('helvetica','normal');doc.setFontSize(7.5);doc.setTextColor(170,185,200);
+  nLines.forEach((l,i)=>doc.text(l,margin+4,y+6+i*4.2));
+  y+=nH+8;
+
+  if(y>240){doc.addPage();y=20;}
+  sHead('Applicant Signature');
+  doc.setFillColor(...LIGHT_GREY);doc.roundedRect(margin,y,cW,28,2,2,'F');
+  try{doc.addImage(d.signatureDataURL,'PNG',margin+2,y+1,cW-4,26);}catch(e){}
+  doc.setDrawColor(...LINE);doc.setLineWidth(0.3);doc.line(margin+5,y+24,margin+80,y+24);
+  doc.setFont('helvetica','normal');doc.setFontSize(7);doc.setTextColor(...MID);
+  doc.text('Signature',margin+5,y+28);
+  const fn=((d.firstName||'')+' '+(d.lastName||'')).trim();
+  doc.text('Name: '+(fn||'—'),margin+90,y+28);
+  y+=36;
+
+  if(y>255){doc.addPage();y=20;}
+  sHead('Office Use Only');
+  doc.setFillColor(...LIGHT_GREY);doc.roundedRect(margin,y,cW,22,2,2,'F');
+  doc.setFont('helvetica','normal');doc.setFontSize(7.5);doc.setTextColor(...MID);
+  [['Interviewed By:',0],['Interview Date:',7],['Outcome:',87],['Notes:',94]].forEach(([label,offset])=>{
+    doc.text(label,margin+4+(offset>=87?offset:0),y+7+(offset===7?7:offset>=87?(offset-87)*7:0));
+  });
+
+  const total=doc.internal.getNumberOfPages();
+  for(let p=1;p<=total;p++){
+    doc.setPage(p);
+    doc.setFillColor(...DARK);doc.rect(0,287,210,10,'F');
+    doc.setFillColor(...BLUE);doc.rect(0,287,210,0.5,'F');
+    doc.setFont('helvetica','normal');doc.setFontSize(7);doc.setTextColor(170,185,200);
+    doc.text('Next Stage Talent — Confidential Application',margin,293);
+    doc.text(`Page ${p} of ${total}`,pageW-margin,293,{align:'right'});
+  }
+
+  return doc.output('datauristring').split(',')[1]; // base64 only
+}
+
+function downloadPDF() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit:'mm', format:'a4' });
+  // Quick rebuild for download
+  const b64 = generatePDFBase64(lastData);
+  const byteChars = atob(b64);
+  const arr = new Uint8Array(byteChars.length);
+  for(let i=0;i<byteChars.length;i++) arr[i]=byteChars.charCodeAt(i);
+  const blob = new Blob([arr], {type:'application/pdf'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  const fn = ((lastData.firstName||'Applicant')+'_'+(lastData.lastName||'')).replace(/\s+/g,'_');
+  a.download = `Application_${fn}_${new Date().toISOString().slice(0,10)}.pdf`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ── Photo & CV file handling ──────────────────────────────
+let selectedPhotos = [];  // Array of File objects
+let selectedCV = null;    // Single File object
+
+function setupFileZones() {
+  // Photo zone
+  const photoInput = document.getElementById('photo-file-input');
+  const photoZone  = document.getElementById('photo-drop-zone');
+  photoZone.addEventListener('dragover', e => { e.preventDefault(); photoZone.style.borderColor='#4a82a6'; });
+  photoZone.addEventListener('dragleave', () => { photoZone.style.borderColor=''; });
+  photoZone.addEventListener('drop', e => {
+    e.preventDefault(); photoZone.style.borderColor='';
+    addPhotos([...e.dataTransfer.files].filter(f => /\.(jpg|jpeg|png)$/i.test(f.name)));
+  });
+  photoInput.addEventListener('change', e => { addPhotos([...e.target.files]); photoInput.value=''; });
+
+  // CV zone
+  const cvInput = document.getElementById('cv-file-input-apply');
+  const cvZone  = document.getElementById('cv-drop-zone-apply');
+  cvZone.addEventListener('dragover', e => { e.preventDefault(); cvZone.style.borderColor='#4a82a6'; });
+  cvZone.addEventListener('dragleave', () => { cvZone.style.borderColor=''; });
+  cvZone.addEventListener('drop', e => {
+    e.preventDefault(); cvZone.style.borderColor='';
+    const f = [...e.dataTransfer.files].find(f => /\.(pdf|doc|docx)$/i.test(f.name));
+    if (f) setCV(f);
+  });
+  cvInput.addEventListener('change', e => { if (e.target.files[0]) setCV(e.target.files[0]); cvInput.value=''; });
+}
+
+const MAX_FILE_MB = 2;
+const MAX_FILE_BYTES = MAX_FILE_MB * 1024 * 1024;
+
+function addPhotos(files) {
+  const file = files[0]; // Only 1 photo allowed
+  if (!file) return;
+  if (file.size > MAX_FILE_BYTES) {
+    alert(`Your photo "${file.name}" is over ${MAX_FILE_MB}MB. Please use a smaller image and try again.`);
+    return;
+  }
+  selectedPhotos = [file]; // Replace any previous photo
+  renderPhotoPreviews();
+}
+
+function removePhoto(idx) {
+  selectedPhotos.splice(idx, 1);
+  renderPhotoPreviews();
+}
+
+function renderPhotoPreviews() {
+  const container = document.getElementById('photo-preview');
+  if (!selectedPhotos.length) { container.innerHTML = ''; return; }
+  container.innerHTML = selectedPhotos.map((f, i) => {
+    const url = URL.createObjectURL(f);
+    return `<div style="position:relative;width:90px;height:90px;border-radius:8px;overflow:hidden;border:1px solid var(--border);">
+      <img src="${url}" style="width:100%;height:100%;object-fit:cover;" />
+      <button type="button" onclick="removePhoto(${i})" title="Remove" style="position:absolute;top:3px;right:3px;background:rgba(0,0,0,0.6);border:none;color:#fff;border-radius:50%;width:20px;height:20px;font-size:11px;cursor:pointer;line-height:1;">✕</button>
+    </div>`;
+  }).join('');
+}
+
+function setCV(file) {
+  if (file.size > MAX_FILE_BYTES) {
+    alert(`Your CV file "${file.name}" is over ${MAX_FILE_MB}MB. Please upload a smaller version (compress or reduce pages).`);
+    return;
+  }
+  selectedCV = file;
+  const preview = document.getElementById('cv-preview-apply');
+  const zone = document.getElementById('cv-drop-zone-apply');
+  zone.style.borderColor = '#22c55e';
+  preview.innerHTML = `<div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:#e9f4ea;border:1px solid #86efac;border-radius:8px;font-size:13px;">
+    <span style="font-size:20px;">${/\.pdf$/i.test(file.name)?'📕':'📘'}</span>
+    <span style="flex:1;font-weight:500;">${file.name}</span>
+    <button type="button" onclick="removeCV()" style="background:none;border:none;color:var(--mid);cursor:pointer;font-size:15px;">✕</button>
+  </div>`;
+}
+
+function removeCV() {
+  selectedCV = null;
+  document.getElementById('cv-preview-apply').innerHTML = '';
+  document.getElementById('cv-drop-zone-apply').style.borderColor = '';
+}
+
+setupFileZones();
+
+// ── Form Submit ───────────────────────────────────────────
+document.getElementById('applyForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  const d = collectData();
+
+  // Basic validation
+  if (!d.firstName || !d.lastName || !d.mobile || !d.email) {
+    const errEl = document.getElementById('formError');
+    errEl.textContent = 'Please fill in all required fields: First Name, Last Name, Mobile, and Email.';
+    errEl.style.display = 'block';
+    errEl.scrollIntoView({behavior:'smooth', block:'center'});
+    return;
+  }
+  document.getElementById('formError').style.display = 'none';
+
+  lastData = d;
+
+  // Show spinner
+  const overlay = document.getElementById('sendingOverlay');
+  const sendingMsg = document.getElementById('sendingMsg');
+  overlay.style.display = 'flex';
+  sendingMsg.textContent = 'Submitting your application…';
+  document.getElementById('submitBtn').disabled = true;
+
+  try {
+    // ── Submit form data to Supabase ──
+    const ok = await nstInsert('nst_applications', d);
+
+    if (!ok) {
+      overlay.style.display = 'none';
+      const errEl = document.getElementById('formError');
+      errEl.textContent = 'Something went wrong. Please try again or contact us directly.';
+      errEl.style.display = 'block';
+      document.getElementById('submitBtn').disabled = false;
+      return;
+    }
+
+    overlay.style.display = 'none';
+    document.getElementById('successOverlay').classList.add('show');
+
+  } catch(err) {
+    overlay.style.display = 'none';
+    const errEl = document.getElementById('formError');
+    errEl.textContent = 'Could not connect to the server. Please check your connection and try again.';
+    errEl.style.display = 'block';
+    document.getElementById('submitBtn').disabled = false;
+  }
+});
+
+function startNew() {
+  document.getElementById('successOverlay').classList.remove('show');
+  document.getElementById('applyForm').reset();
+  clearSig();
+  selectedPhotos = []; selectedCV = null;
+  renderPhotoPreviews();
+  document.getElementById('cv-preview-apply').innerHTML = '';
+  document.getElementById('cv-drop-zone-apply').style.borderColor = '';
+  SKILLS.forEach(s=>{
+    const r=document.querySelector(`input[name="skill_${s.replace(/\s+/g,'_')}"][value="N/A"]`);
+    if(r)r.checked=true;
+  });
+  document.querySelectorAll('.interest-chip').forEach(c=>c.classList.remove('checked'));
+  document.getElementById('dateDay').value=today.getDate();
+  document.getElementById('dateMon').value=today.getMonth()+1;
+  document.getElementById('dateYear').value=today.getFullYear();
+  document.getElementById('submitBtn').disabled=false;
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+</script>
+
+
+</body>
+</html>
