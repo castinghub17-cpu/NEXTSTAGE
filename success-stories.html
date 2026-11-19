@@ -116,9 +116,9 @@
   </div>
 </footer>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-<script src="js/main.js"></script>
-<script src="js/supabase-config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/main.js"></script>
+    <script src="js/supabase-config.js"></script>
 <script>
 async function loadStories() {
   const res = await apiFetch('/api/success-stories');
@@ -176,7 +176,5 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbo
 
 loadStories();
 </script>
-
-
 </body>
 </html>

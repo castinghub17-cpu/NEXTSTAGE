@@ -8,7 +8,7 @@ import json, os, sys, time
 import urllib.request, urllib.error
 
 SUPABASE_URL = 'https://qibdsiirzhfkpkyznfys.supabase.co'
-SUPABASE_KEY = 'sb_publishable_2kYikvy29rc9845zr8J26A_jYNUyM4t'
+SUPABASE_KEY = 'sb_secret_IwKicTt0PwjW3OqBFszjVg_bIWdOmWW'
 DATA_DIR = os.path.join(os.path.dirname(__file__), 'nst-data')
 
 HEADERS = {

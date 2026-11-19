@@ -227,17 +227,17 @@
   </div>
 </footer>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-<script src="js/main.js"></script>
-<script src="js/supabase-config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/main.js"></script>
+    <script src="js/supabase-config.js"></script>
 <script>
   let allPosts = [];
   let activeFilter = 'all';
 
   async function loadPosts() {
     try {
-      const res = await apiFetch('/api/blog');
-      allPosts = res.data || [];
+      const res = await fetch('/api/blog');
+      allPosts = await res.json();
       document.getElementById('blog-loading').style.display = 'none';
       renderPosts();
     } catch(e) {
@@ -292,7 +292,5 @@
 
   loadPosts();
 </script>
-
-
 </body>
 </html>

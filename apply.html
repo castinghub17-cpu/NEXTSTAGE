@@ -483,9 +483,9 @@
   </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-<script src="js/main.js"></script>
-<script src="js/supabase-config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/main.js"></script>
+    <script src="js/supabase-config.js"></script>
 <script>
 // ── Skills & Interests Data ────────────────────────────────
 const SKILLS = ['Singing', 'Dancing', 'Sports', 'Swimming', 'Musical Instrument'];
@@ -873,16 +873,37 @@ document.getElementById('applyForm').addEventListener('submit', async function(e
   document.getElementById('submitBtn').disabled = true;
 
   try {
-    // ── Submit form data to Supabase ──
-    const ok = await nstInsert('nst_applications', d);
+    // ── Step 1: Submit form data ──
+    const payload = { formData: d };
+    const resp = await fetch('/api/apply', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
 
-    if (!ok) {
+    if (!resp.ok) {
       overlay.style.display = 'none';
+      const err = await resp.json().catch(() => ({}));
       const errEl = document.getElementById('formError');
-      errEl.textContent = 'Something went wrong. Please try again or contact us directly.';
+      errEl.textContent = 'Something went wrong: ' + (err.error || 'Please try again or contact us directly.');
       errEl.style.display = 'block';
       document.getElementById('submitBtn').disabled = false;
       return;
+    }
+
+    const result = await resp.json().catch(() => ({}));
+    const appId = result.application_id;
+
+    // ── Step 2: Upload files if any ──
+    const allFiles = [...selectedPhotos, ...(selectedCV ? [selectedCV] : [])];
+    if (appId && allFiles.length > 0) {
+      for (let i = 0; i < allFiles.length; i++) {
+        sendingMsg.textContent = `Uploading file ${i+1} of ${allFiles.length}…`;
+        const fd = new FormData();
+        fd.append('application_id', appId);
+        fd.append('file', allFiles[i]);
+        await fetch('/api/apply/documents', { method: 'POST', body: fd }).catch(() => {});
+      }
     }
 
     overlay.style.display = 'none';
@@ -917,7 +938,5 @@ function startNew() {
   window.scrollTo({top:0,behavior:'smooth'});
 }
 </script>
-
-
 </body>
 </html>
