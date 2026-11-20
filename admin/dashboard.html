@@ -10,6 +10,10 @@
   <link rel="apple-touch-icon" href="https://www.nextstagetalent.co.uk/favicon-192.png">
   <title>Admin Dashboard — Prestige Agency</title>
   <link rel="stylesheet" href="../css/style.css" />
+  <!-- Supabase CDN — must load before supabase-admin.js -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- Admin adapter: intercepts all /api/* fetch calls, handles auth -->
+  <script src="supabase-admin.js"></script>
   <style>
     body { background: #f7f7f5; }
     .admin-layout { display: flex; min-height: 100vh; }

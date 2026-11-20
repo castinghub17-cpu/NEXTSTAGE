@@ -48,8 +48,12 @@
     <p style="margin-top:28px; text-align:center; font-size:12px; color:var(--light);">This page is for authorised personnel only.</p>
   </div>
 
+  <!-- Supabase CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- Supabase admin adapter (handles /api/* fetch intercepts + auth) -->
+  <script src="supabase-admin.js"></script>
   <script>
-    // Redirect if already logged in
+    // If already logged in, go to dashboard
     fetch('/api/admin/check').then(r=>r.json()).then(d=>{ if(d.authenticated) window.location='/admin/dashboard.html'; });
 
     function togglePass() {
