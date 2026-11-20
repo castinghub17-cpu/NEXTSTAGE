@@ -115,3 +115,68 @@ async function nstInsert(table, row) {
   const { error } = await db.from(table).insert([row]);
   return !error;
 }
+
+// ── Apply form (apply.html calls fetch('/api/apply') directly) ──
+// There is no server any more, so these two calls are answered here:
+//   POST /api/apply            → saves the application, returns { application_id }
+//   POST /api/apply/documents  → uploads one photo/CV and links it to the application
+(function () {
+  const _fetch = window.fetch.bind(window);
+  const MAP = {
+    firstName: 'first_name', lastName: 'last_name', dob: 'dob', age: 'age', mobile: 'mobile',
+    landline: 'landline', email: 'email', sex: 'sex', nationality: 'nationality',
+    ethnicOrigin: 'ethnic_origin', address: 'address', postcode: 'postcode', website: 'website',
+    socialMedia: 'social_media', spotlightPin: 'spotlight_pin', equityNumber: 'equity_number',
+    currentEmployment: 'current_employment', availability: 'availability', height: 'height',
+    weight: 'weight', bustChest: 'bust_chest', waist: 'waist', hips: 'hips', shoeSize: 'shoe_size',
+    eyeColor: 'eye_color', hairColor: 'hair_color', complexion: 'complexion',
+    suitDressSize: 'suit_dress_size', languages: 'languages', experience: 'experience',
+    hasPortfolio: 'has_portfolio', otherAgency: 'other_agency', otherAgencyName: 'other_agency_name',
+    additionalInfo: 'additional_info', imdbLink: 'imdb_link', signatureDataURL: 'signature',
+    source: 'source'
+  };
+  function json(body, status) {
+    return new Response(JSON.stringify(body), { status: status || 200, headers: { 'Content-Type': 'application/json' } });
+  }
+  window.fetch = async function (input, init) {
+    const url = typeof input === 'string' ? input : (input && input.url) || '';
+    const method = ((init && init.method) || 'GET').toUpperCase();
+    try {
+      if (method === 'POST' && (url === '/api/apply' || url.endsWith('/api/apply'))) {
+        let d = {};
+        try { d = JSON.parse(init.body || '{}'); } catch (e) {}
+        d = d.formData || d;
+        const p = {};
+        Object.keys(MAP).forEach(function (k) {
+          if (d[k] !== undefined && d[k] !== null && d[k] !== '') p[MAP[k]] = String(d[k]);
+        });
+        p.skills = JSON.stringify(d.skills || {});
+        p.interests = JSON.stringify(d.interests || []);
+        const { data, error } = await db.rpc('nst_submit_application', { p: p });
+        if (error) return json({ error: error.message }, 500);
+        return json({ ok: true, application_id: data });
+      }
+      if (method === 'POST' && (url === '/api/apply/documents' || url.endsWith('/api/apply/documents'))) {
+        const fd = init && init.body;
+        if (!(fd instanceof FormData)) return json({ error: 'Expected FormData' }, 400);
+        const appId = parseInt(fd.get('application_id'), 10);
+        const file = fd.get('file');
+        if (!appId || !file) return json({ error: 'Missing file' }, 400);
+        const safe = String(file.name || 'file').replace(/[^A-Za-z0-9._-]+/g, '_');
+        const path = 'applications/' + appId + '/' + Date.now() + '_' + safe;
+        const up = await db.storage.from('nst-uploads').upload(path, file, { upsert: false });
+        if (up.error) return json({ error: up.error.message }, 500);
+        const publicUrl = db.storage.from('nst-uploads').getPublicUrl(path).data.publicUrl;
+        const { error } = await db.rpc('nst_add_application_document', {
+          p_application_id: appId, p_filename: file.name, p_file_url: publicUrl,
+          p_file_type: file.type || '', p_file_size: file.size || 0
+        });
+        if (error) return json({ error: error.message }, 500);
+        return json({ ok: true });
+      }
+    } catch (err) {
+      return json({ error: String(err && err.message || err) }, 500);
+    }
+    return _fetch(input, init);
+  };
+})();

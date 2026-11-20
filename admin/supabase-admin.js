@@ -31,31 +31,30 @@
     return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
   }
 
-  // ── Session helpers ─────────────────────────────────────────
-  function getSession() {
+  // ── Auth (Supabase Auth + nst_admins) ───────────────────
+  // Logging in uses a real Supabase account. Typing just "admin"
+  // as the username signs in as admin@nextstagetalent.co.uk.
+  const ADMIN_EMAIL_DOMAIN = 'nextstagetalent.co.uk';
+  function toEmail(user) {
+    user = String(user || '').trim().toLowerCase();
+    return user.includes('@') ? user : (user + '@' + ADMIN_EMAIL_DOMAIN);
+  }
+  async function isAdmin() {
     try {
-      const s = JSON.parse(localStorage.getItem(ADMIN_SESSION_KEY) || 'null');
-      if (!s || !s.expires) return null;
-      if (Date.now() > s.expires) { localStorage.removeItem(ADMIN_SESSION_KEY); return null; }
-      return s;
-    } catch (e) { return null; }
-  }
-
-  function setSession() {
-    const s = { token: crypto.randomUUID(), expires: Date.now() + SESSION_HOURS * 3600 * 1000 };
-    localStorage.setItem(ADMIN_SESSION_KEY, JSON.stringify(s));
-    return s;
-  }
-
-  function clearSession() {
-    localStorage.removeItem(ADMIN_SESSION_KEY);
+      const { data: { session } } = await db.auth.getSession();
+      if (!session) return false;
+      const { data, error } = await db.rpc('nst_is_admin');
+      return !error && data === true;
+    } catch (e) { return false; }
   }
 
   // ── Auth guard on dashboard pages ───────────────────────────
   if (window.location.pathname.includes('dashboard')) {
-    if (!getSession()) {
-      window.location.replace('/admin/login.html');
-    }
+    document.documentElement.style.visibility = 'hidden';
+    isAdmin().then(function (ok) {
+      if (!ok) window.location.replace('/admin/login.html');
+      else document.documentElement.style.visibility = '';
+    });
   }
 
   // ── Build a fake Response-like object ───────────────────────
@@ -125,40 +124,33 @@
 
     // ── AUTH ──────────────────────────────────────────────────
     if (path === '/api/admin/check') {
-      const session = getSession();
-      return fakeResp({ authenticated: !!session });
+      return fakeResp({ authenticated: await isAdmin() });
     }
 
     if (path === '/api/admin/login') {
       const { password } = body;
+      const username = body.username || body.email || 'admin';
       if (!password) return fakeResp({ error: 'No password' }, 400);
-      const hash = await sha256(password);
-      // Load stored hash from Supabase
-      const { data: row } = await db.from('nst_settings').select('value').eq('key', 'admin_pwd_hash').single();
-      const stored = row && row.value;
-      // First-time setup: if no hash in Supabase, this password becomes the password
-      if (!stored) {
-        await db.from('nst_settings').upsert({ key: 'admin_pwd_hash', value: hash }, { onConflict: 'key' });
-        setSession();
-        return fakeResp({ ok: true });
+      const { error } = await db.auth.signInWithPassword({ email: toEmail(username), password });
+      if (error) return fakeResp({ error: 'Invalid username or password' }, 401);
+      if (!(await isAdmin())) {
+        await db.auth.signOut();
+        return fakeResp({ error: 'This account is not an NST admin' }, 403);
       }
-      if (hash !== stored) return fakeResp({ error: 'Invalid password' }, 401);
-      setSession();
       return fakeResp({ ok: true });
     }
 
     if (path === '/api/admin/logout') {
-      clearSession();
+      await db.auth.signOut();
       return fakeResp({ ok: true });
     }
 
     if (path === '/api/admin/change-password') {
-      const { current_password, new_password } = body;
-      const curHash = await sha256(current_password);
-      const { data: row } = await db.from('nst_settings').select('value').eq('key', 'admin_pwd_hash').single();
-      const stored = row && row.value;
-      if (stored && curHash !== stored) return fakeResp({ error: 'Current password incorrect' }, 401);
-      await db.from('nst_settings').upsert({ key: 'admin_pwd_hash', value: await sha256(new_password) }, { onConflict: 'key' });
+      const { new_password } = body;
+      if (!new_password || String(new_password).length < 8) return fakeResp({ error: 'Password must be at least 8 characters' }, 400);
+      if (!(await isAdmin())) return fakeResp({ error: 'Please log in again' }, 401);
+      const { error } = await db.auth.updateUser({ password: new_password });
+      if (error) return fakeResp({ error: error.message }, 400);
       return fakeResp({ ok: true });
     }
 
@@ -620,7 +612,7 @@
     // ── SETTINGS ──────────────────────────────────────────────
     if (path === '/api/settings') {
       if (method === 'GET') {
-        const { data } = await db.from('nst_settings').select('key,value');
+        const { data } = await db.from('nst_settings').select('key,value').neq('key', 'admin_pwd_hash');
         const obj = {};
         (data || []).forEach(r => { obj[r.key] = r.value; });
         return fakeResp(obj);
