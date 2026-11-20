@@ -165,12 +165,12 @@
     // ── DASHBOARD STATS ───────────────────────────────────────
     if (path === '/api/dashboard') {
       const [talent, contacts, apps, leads, jobs, blog] = await Promise.all([
-        db.from('nst_talent').select('id', { count: 'exact', head: true }),
-        db.from('nst_contacts').select('id', { count: 'exact', head: true }),
-        db.from('nst_applications').select('id', { count: 'exact', head: true }),
-        db.from('nst_leads').select('id', { count: 'exact', head: true }),
-        db.from('nst_jobs').select('id', { count: 'exact', head: true }),
-        db.from('nst_blog_posts').select('id', { count: 'exact', head: true }),
+        db.from('nst_talent').select('*', { count: 'exact', head: true }),
+        db.from('nst_contacts').select('*', { count: 'exact', head: true }),
+        db.from('nst_applications').select('*', { count: 'exact', head: true }),
+        db.from('nst_leads').select('*', { count: 'exact', head: true }),
+        db.from('nst_jobs').select('*', { count: 'exact', head: true }),
+        db.from('nst_blog_posts').select('*', { count: 'exact', head: true }),
       ]);
       return fakeResp({
         talent_count: talent.count || 0,
@@ -492,15 +492,18 @@
 
     // ── LEADS ─────────────────────────────────────────────────
     if (path === '/api/leads/stats') {
-      const { data, error } = await db.from('nst_leads').select('status');
-      if (error) return fakeResp({ total: 0, new: 0, progress: 0, booked: 0 });
-      const all = data || [];
       const progressStatuses = ['Called','No Answer','Interview Scheduled','Final Interview','Interview Done','2nd Interview','Confirm','Interview Confirm'];
+      const [total, newCount, progress, booked] = await Promise.all([
+        db.from('nst_leads').select('*', { count: 'exact', head: true }),
+        db.from('nst_leads').select('*', { count: 'exact', head: true }).eq('status', 'New'),
+        db.from('nst_leads').select('*', { count: 'exact', head: true }).in('status', progressStatuses),
+        db.from('nst_leads').select('*', { count: 'exact', head: true }).eq('status', 'Shoot Booked'),
+      ]);
       return fakeResp({
-        total:    all.length,
-        new:      all.filter(l => (l.status || 'New') === 'New').length,
-        progress: all.filter(l => progressStatuses.includes(l.status || '')).length,
-        booked:   all.filter(l => (l.status || '') === 'Shoot Booked').length,
+        total:    total.count || 0,
+        new:      newCount.count || 0,
+        progress: progress.count || 0,
+        booked:   booked.count || 0,
       });
     }
 
