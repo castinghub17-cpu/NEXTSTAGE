@@ -133,10 +133,12 @@
       const { password } = body;
       if (!password) return fakeResp({ error: 'No password' }, 400);
       const hash = await sha256(password);
-      const stored = localStorage.getItem(ADMIN_PASSWORD_HASH_KEY);
-      // First-time setup: if no hash stored, any password sets it
+      // Load stored hash from Supabase
+      const { data: row } = await db.from('nst_settings').select('value').eq('key', 'admin_pwd_hash').single();
+      const stored = row && row.value;
+      // First-time setup: if no hash in Supabase, this password becomes the password
       if (!stored) {
-        localStorage.setItem(ADMIN_PASSWORD_HASH_KEY, hash);
+        await db.from('nst_settings').upsert({ key: 'admin_pwd_hash', value: hash }, { onConflict: 'key' });
         setSession();
         return fakeResp({ ok: true });
       }
@@ -153,9 +155,10 @@
     if (path === '/api/admin/change-password') {
       const { current_password, new_password } = body;
       const curHash = await sha256(current_password);
-      const stored = localStorage.getItem(ADMIN_PASSWORD_HASH_KEY);
+      const { data: row } = await db.from('nst_settings').select('value').eq('key', 'admin_pwd_hash').single();
+      const stored = row && row.value;
       if (stored && curHash !== stored) return fakeResp({ error: 'Current password incorrect' }, 401);
-      localStorage.setItem(ADMIN_PASSWORD_HASH_KEY, await sha256(new_password));
+      await db.from('nst_settings').upsert({ key: 'admin_pwd_hash', value: await sha256(new_password) }, { onConflict: 'key' });
       return fakeResp({ ok: true });
     }
 
