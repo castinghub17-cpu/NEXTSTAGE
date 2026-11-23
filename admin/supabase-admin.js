@@ -658,8 +658,33 @@
 
     // ── PUBLIC POST ROUTES (passthrough from public pages) ────
     if (path === '/api/apply') {
-      const { error } = await db.from('nst_applications').insert([body]);
+      const row = body.formData || body;
+      const { data, error } = await db.from('nst_applications').insert([row]).select('id').single();
       if (error) return fakeResp({ error: error.message }, 500);
+      return fakeResp({ ok: true, application_id: data.id });
+    }
+
+    if (path === '/api/apply/documents') {
+      // FormData: application_id + file
+      if (init && init.body instanceof FormData) {
+        const fd = init.body;
+        const appId = fd.get('application_id');
+        const file  = fd.get('file');
+        if (!file || !file.size) return fakeResp({ ok: true });
+        const ext  = file.name.split('.').pop();
+        const path = `applications/${appId}/${Date.now()}_${file.name}`;
+        const url  = await uploadFile('nst-uploads', path, file);
+        if (url) {
+          await db.from('nst_documents').insert([{
+            application_id: appId,
+            filename: file.name,
+            file_url: url,
+            file_type: ext,
+            file_size: file.size
+          }]);
+        }
+        return fakeResp({ ok: true });
+      }
       return fakeResp({ ok: true });
     }
 
